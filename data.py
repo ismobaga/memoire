@@ -1,4 +1,10 @@
+import math
+
 import numpy as np
+
+# Parameters for the channel and signal-to-noise ratio
+BANDWIDTH = 1e6  # 1 MHz bandwidth
+SNR = 10  # Signal-to-noise ratio in dB
 
 
 class Base:
@@ -13,10 +19,15 @@ class Task(Base):
 
 
 class User(Base):
-    def __init__(self, user_id, computation_capacity, rate):
+    def __init__(self, user_id, computation_capacity, x, y):
         self.computation_capacity = computation_capacity
         self.id = user_id
-        self.rate = rate
+        self.x = x
+        self.y = y
+        self.rate = self.shannon_data_rate(math.dist([x, y], [0, 0]), BANDWIDTH, SNR)
+
+    def shannon_data_rate(self, distance, bandwidth, snr):
+        return bandwidth * np.log2(1 + snr / distance ** 2)
 
 
 class Request(Base):
@@ -31,19 +42,33 @@ class Request(Base):
 
 def generata_sytem(ntasks, nusers, ninputs, nrequests, min_task_process,
                    max_task_process, user_computation, min_input, max_input,
-                   min_output_time, max_output_time, min_arrival, max_arrival, min_deadline, max_dealine,
-                   min_rate, max_rate):
+                   min_output_time, max_output_time, min_arrival, max_arrival, min_deadline, max_deadline,
+                   mec_radius):
     tasks = [Task(i, np.random.randint(min_task_process, max_task_process)) for i in range(ntasks)]
-    users = [User(i, user_computation, np.random.randint(min_rate, max_rate)) for i in range(nusers)]
+    # Generate user positions within the MEC's radius
+    # https://programming.guide/random-point-within-circle.html
+    user_positions = [(mec_radius * np.sqrt(np.random.uniform(0, 1)),
+                       np.random.uniform(0, 2 * np.pi)) for _ in range(nusers)]
+
+    users = [User(i, user_computation, x, y) for i, (r, theta) in enumerate(user_positions)
+             for x, y in [(r * np.cos(theta), r * np.sin(theta))]]
     inputs = np.random.randint(min_input, max_input, size=ninputs)
     out_times = np.random.uniform(min_output_time, max_output_time, size=(ntasks, ninputs))
-    outputs = inputs*out_times
+    outputs = inputs * out_times
     requests = []
-    for i in range(nusers):
-        task_id = np.random.randint(0, ntasks)
-        input_id = np.random.randint(0, ninputs)
-        arrival = np.random.randint(min_arrival, max_arrival)
-        deadline = np.random.randint(min_deadline, max_dealine)
-        requests.append(Request(i, i, task_id, input_id, arrival, deadline))
+    ri = 0
+    for time in range(min_arrival, max_arrival):
+        num_requests = np.random.randint(1, nusers + 1)  # Generate a random number of requests per interval
+        userslist = list(range(nusers))
+        for _ in range(num_requests):
+            user_id = np.random.choice(userslist)
+            userslist.remove(user_id)
+            task_id = np.random.randint(0, ntasks)
+            input_id = np.random.randint(0, ninputs)
+            arrival = time
+            deadline = np.random.randint(min_deadline, max_deadline)
+            requests.append(Request(ri, user_id, task_id, input_id, arrival, deadline))
+            ri += 1
+
 
     return tasks, users, inputs, outputs, requests
