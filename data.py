@@ -58,7 +58,7 @@ def generata_sytem(ntasks, nusers, ninputs, nrequests, min_task_process,
     requests = []
     ri = 0
     for time in range(min_arrival, max_arrival):
-        num_requests = np.random.randint(1, nusers + 1)  # Generate a random number of requests per interval
+        num_requests = np.random.randint(0, nrequests+1)  # Generate a random number of requests per interval
         userslist = list(range(nusers))
         for _ in range(num_requests):
             user_id = np.random.choice(userslist)

@@ -36,6 +36,21 @@
 - [x] Une fonction pour donner le nombre de requêtes execute
 - [ ] utilise github(git)
 - les données d'articles
+#### Jeudi
+
+- courbe de convergence
+- Moins d'users (40) et entre (0,10) requetes per time slot
+- Change le deadline (3, et 8) joue sur max (courbes)
+Apres
+- Nombre de requete / 2 ou sur 4
+
+
+- Évolution de la courbe de convergence au fil des generations.
+- Réduction du nombre d'utilisateurs à 40, avec une fréquence de requêtes par intervalle de temps allant de 0 à 10.
+- Variation des délais impartis, avec des valeurs entre 3 et 8, impactant les valeurs maximales des courbes.
+Ensuite,
+- Réduction du nombre de requêtes de moitié ou par un facteur de 4.
+- 
 
 ### Parameters
 | Parameter                   | Explanation                                                                                                   |
@@ -72,3 +87,25 @@ Toutes les requêtes demandent des tâches différentes ou des entrées différe
 - Si nous choisissons de répondre avec l'entrée :
 Les requêtes demandent différentes entrées. Le serveur ne peut répondre qu'avec une seule entrée, ce qui ne peut pas satisfaire les demandes de tâches et d'entrées différentes.
 
+Considérons les éléments suivants :
+C1 : code 1, I1 : pour l'entrée 1, L1 : pour la location 1
+Même chose pour C2, I2, L2.
+
+Lorsque deux réponses (C1, I1, L1) et (C2, I2, L2) pour deux requêtes sont envoyées au même time slot, nous avons les possibilités suivantes :
+
+| Possibilité           | Quoi faire                                                 |
+|-----------------------|------------------------------------------------------------|
+| C1=C2, I1=I2, L1!=L2  | Pas bon, changer L1 ou L2 de manière à avoir L1=L2        |
+| C1=C2, I1!=I2, L1!=L2 | Pas bon, différentes entrées, enlever l'une des réponses   |
+| C1!=C2, I1!=I2, L1!=L2| Pas bon, différentes entrées et codes, enlever l'une des réponses |
+| C1=C2, I1!=I2, L1=L2  | Pas bon, entrée différente, enlever l'une des réponses   |
+| C1!=C2, I1!=I2, L1=L2 | Pas bon, différentes entrées, enlever l'une des réponses |
+| C1!=C2, I1=I2, L1=L2  | Bon si L1=L2=LOCAL, sinon ajuster L1, L2 à LOCAL          |
+| C1!=C2, I1=I2, L1!=L2 | Pas bon, ajuster L1, L2 à LOCAL                           |
+| C1!=C2, I1!=I2, L1=L2 | Pas bon, enlever l'une des réponses                       |
+| C1=C2, I1=I2, L1=L2   | Pas de problème, pas besoin d'ajuster  
+
+
+
+Nouvau indivudu
+choir seulement quand repondre
