@@ -7,10 +7,10 @@ from genetic import genetic_algorithm, count_individual, count_schedule, SKIP_AC
 
 # Parametre
 
-N_USERS = 10
+N_USERS = 5
 N_TASKS = 5
 N_INPUT = 5
-N_REQUESTS = 10
+N_REQUESTS = 5
 MIN_DATA_RATE = 10
 MAX_DATA_RATE = 20
 MIN_INPUT_SIZE = 1e3
@@ -28,8 +28,8 @@ SERVER_COMPUTATION_CAPACITY = 100
 MEC_RADIUS = 100
 
 # Utilisation de l'algorithme génétique
-POPULATION_SIZE = 80
-GENERATIONS = 100
+POPULATION_SIZE = 100
+GENERATIONS = 2000
 MUTATION_RATE = 0.1
 PROBABILITY_SKIP = 0.05
 
@@ -47,16 +47,36 @@ for MAX_DEADLINE in range(MIN_DEADLINE+1, 8+1):
                                       MUTATION_RATE, PROBABILITY_SKIP, draw=False)
     results[MAX_DEADLINE] = result
 
-    plt.figure(figsize=(10, 6))
-    plt.xlabel("Generation")
-    plt.ylabel("Best Fitness")
-    plt.title("Best Fitness per Generation")
-    plt.grid(True)
-    for MAX_DEADLINE, result in results.items():
-        plt.plot(range(1, result['generations'] + 1), result['best_fitness_per_generation'],
-                 label=f"MAX_DEADLINE {MAX_DEADLINE}, NREQUESTS {result['nrequests']}")
-    plt.legend()
-    plt.show()
+fig = plt.figure(figsize=(10, 6))
+plt.xlabel("Generation")
+plt.ylabel("Best Fitness")
+plt.title("Best Fitness per Generation")
+plt.grid(True)
+for MAX_DEADLINE, result in results.items():
+    plt.plot(range(1, result['generations'] + 1), result['best_fitness_per_generation'],
+             label=f"MAX_DEADLINE {MAX_DEADLINE}, NREQUESTS {result['nrequests']}")
+    fig.canvas.draw()
+    print("DRAW", MAX_DEADLINE)
+    plt.pause(0.1)  # pause 0.1 sec, to force a plot redraw
+
+plt.legend()
+plt.savefig("fitness.png")
+plt.show()
+
+fig = plt.figure(figsize=(10, 6))
+plt.xlabel("Generation")
+plt.ylabel("Best Count")
+plt.title("Best Count per Generation")
+for MAX_DEADLINE, result in results.items():
+    plt.plot(range(1, result['generations'] + 1), result['best_count_per_generation'],
+             label=f"MAX_DEADLINE {MAX_DEADLINE}, NREQUESTS {result['nrequests']}")
+    fig.canvas.draw()
+    print("DRAW", MAX_DEADLINE)
+    plt.pause(0.1)  # pause 0.1 sec, to force a plot redraw
+
+plt.legend()
+plt.savefig("number.png")
+plt.show()
 
 # best_count = count_schedule(best_schedule, tasks, users, inputs, outputs, SERVER_COMPUTATION_CAPACITY)
 
