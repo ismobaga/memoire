@@ -161,12 +161,6 @@ def mutate(individual, mutation_rate, requests):
             actions = [(SERVER_LOCATION, send_time), (LOCAL_LOCATION, send_time), SKIP_ACTION_VALUE]
             action_id = np.random.choice([0, 1, 2])
             mutated_individual[i] = actions[action_id]  # TODO : Ajouter une faible probabilité pour le skip
-            # if mutated_individual[i] != SKIP_ACTION_VALUE:
-            #     # send_time = mutated_individual[i][1]
-            #     if mutated_individual[i][0] == LOCAL_LOCATION:
-            #         mutated_individual[i] = (SERVER_LOCATION, send_time)
-            #     else:
-            #         mutated_individual[i] = (LOCAL_LOCATION, send_time)
     return mutated_individual
 
 
@@ -423,10 +417,29 @@ def select_parents(population, fitness_scores, population_size):
 
     return selected_parents
 
+def selection(population, fitness_values):
+    total_fitness = sum(fitness_values)
+
+    # Normalize fitness values
+    normalized_fitness = [total_fitness / fit for fit in fitness_values]
+
+    # Selection using Roulette Wheel Selection
+    selected_population = []
+    for _ in range(len(population)):
+        random_value = random.uniform(0, total_fitness)
+        cumulative_sum = 0
+        for index, norm_fit in enumerate(normalized_fitness):
+            cumulative_sum += norm_fit
+            if cumulative_sum >= random_value:
+                selected_population.append(population[index])
+                break
+
 
 # Algorithme génétique
 def genetic_algorithm(tasks, users, requests, inputs, outputs, server_processing_capacity, population_size, generations,
-                      mutation_rate, probability_skip, draw=False):
+                      mutation_rate, probability_skip, draw=False, fitness_func=None):
+    if fitness_func == None:
+        fitness_func = evaluate_individual
     population = []
     while len(population) < population_size:
         individual = []
@@ -448,51 +461,42 @@ def genetic_algorithm(tasks, users, requests, inputs, outputs, server_processing
         # print("len pop", len(population))
         # Évaluation de la population
 
-        population = sorted(population, key=lambda x: fitness_soft(x, requests, tasks, users, inputs, outputs,
+        population = sorted(population, key=lambda x: fitness_func(x, requests, tasks, users, inputs, outputs,
                                                                           server_processing_capacity))
         fitness_scores = []
         for individual in population:
-            fitness = fitness_soft(individual, requests, tasks, users, inputs, outputs,
-                                          server_processing_capacity)
+            fitness = fitness_func(individual, requests, tasks, users, inputs, outputs, server_processing_capacity)
 
             fitness_scores.append(fitness)
-
+        min_fit = min(fitness_scores)
         # Append the best fitness of the current generation to the list
-        best_fitness_per_generation.append(min(fitness_scores))
+        best_fitness_per_generation.append(min_fit)
         best_id = np.array(fitness_scores).argmin()
         best_individual = population[best_id]
+        # print("Gneneration", generation, "min fit", min_fit, fitness_scores[best_id], best_individual)
         best_count_per_generation.append(
             count_individual(best_individual, requests, tasks, users, inputs, outputs, server_processing_capacity))
 
-        # Sélection des parents (roullette)
-        # selected_parents = np.random.choice(population, size=population_size // 2, p=1 / np.array(fitness_scores))
-        # Utilisation de la fonction pour sélectionner les parents
-        # selected_parents = select_parents(population, fitness_scores, population_size)
-        elites_size = population_size // 4
-        elites = selection(population, fitness_scores, population_size, elites_size)
-        # elites = roulette_wheel_selection(population, fitness_scores, population_size,elites_size )
-        selected_parents = population[elites_size:]
-        # selected_parents = select_parents(population, fitness_scores, population_size)
-        # print("slect", len(selected_parents))
-        # elites = np.random.choice(population, size=population_size - (population_size // 2))
-        # Croisement et mutation
-        new_population = []
-        children = []
-        while len(children) < len(selected_parents):
+        ELITISM_RATIO = 0.30
+        # Find indices of top individuals (elitism)
+        elites_size = int(ELITISM_RATIO * len(population))
+        elite_indices = sorted(range(len(fitness_scores)), key=lambda i: fitness_scores[i])[:elites_size]
+
+        # Create a new generation with elites and offspring
+        new_population = [population[i] for i in elite_indices]
+        while len(new_population) < len(population):
             index1 = random.randint(0, elites_size - 1)
             index2 = random.randint(0, elites_size - 1)
-            parent1 = selected_parents[index1]
-            parent2 = selected_parents[index2]
+            parent1 = population[index1]
+            parent2 = population[index2]
 
             child1, child2 = crossover(parent1, parent2)
             child1 = mutate(child1, mutation_rate, requests)
             child2 = mutate(child2, mutation_rate, requests)
 
-            children.append(child1)
-            children.append(child2)
+            new_population.append(child1)
+            new_population.append(child2)
 
-        new_population = children + elites
-        # print('new', len(new_population), population_size)
         corrected_population = correct_population(new_population, requests)
         population = corrected_population
 
@@ -504,16 +508,16 @@ def genetic_algorithm(tasks, users, requests, inputs, outputs, server_processing
              'Best Executed N. per Generation')
 
     # Sélection du meilleur individu
-    best_individual = min(population, key=lambda ind: fitness_soft(ind, requests, tasks, users, inputs, outputs,
+    best_individual = min(population, key=lambda ind: fitness_func(ind, requests, tasks, users, inputs, outputs,
                                                                           server_processing_capacity))
     data = {
         'generations': generations,
         'best_fitness_per_generation': best_fitness_per_generation,
         'best_count_per_generation': best_count_per_generation,
         'nrequests': len(requests),
-        'population': population,
+        # 'population': population,
         'best_individual': best_individual,
-        'best_fitness': fitness_soft(best_individual, requests, tasks, users, inputs, outputs,
+        'best_fitness': fitness_func(best_individual, requests, tasks, users, inputs, outputs,
                                             server_processing_capacity),
         'best_count': count_individual(best_individual, requests, tasks, users, inputs, outputs,
                                        server_processing_capacity),

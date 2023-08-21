@@ -58,7 +58,7 @@ def generata_sytem(ntasks, nusers, ninputs, nrequests, min_task_process,
     requests = []
     ri = 0
     for time in range(min_arrival, max_arrival):
-        num_requests = np.random.randint(0, nrequests+1)  # Generate a random number of requests per interval
+        num_requests = np.random.randint(0, nrequests + 1)  # Generate a random number of requests per interval
         userslist = list(range(nusers))
         for _ in range(num_requests):
             user_id = np.random.choice(userslist)
@@ -70,5 +70,22 @@ def generata_sytem(ntasks, nusers, ninputs, nrequests, min_task_process,
             requests.append(Request(ri, user_id, task_id, input_id, arrival, deadline))
             ri += 1
 
+    return tasks, users, inputs, outputs, requests
+
+
+def mock_system():
+    users = [User(1, 15, 5, 5), User(2, 15, 0, 5), User(3, 15, 5, 0), User(4, 15, -5, -5), User(5,15, -5, 0)]
+    tasks = [Task(1, 10), Task(2, 15), Task(3, 12), Task(4, 18), Task(5, 20)]
+    inputs =[500, 1000, 800, 400, 600]
+    outputs =[]
+    for task in tasks:
+        outputs.append([size*task.processing_requirement/10 for size in inputs])
+
+    requests = [Request(0, 1,1,1,0,3),
+                Request(1, 2, 1, 2, 0, 3),
+                Request(2, 3, 2, 2, 1, 3),
+                Request(3, 4, 4, 3, 1, 3),
+                Request(4, 0, 3, 2, 1, 3)
+                ]
 
     return tasks, users, inputs, outputs, requests
