@@ -227,14 +227,8 @@ def form_send_group(individual, requests, with_skip=False):
             send_times[send_time].append((location, req.input_index, req.task, position))
     return send_times
 
-
-def has_conflict(individual, requests):
-    # Goup = [(location, input, task, position dans individual)]
-    groups = form_send_group(individual, requests, with_skip=False)
-    for time, group in groups.items():
-        if len(group) <= 1:
-            # pas besoin de change
-            continue
+def group_has_conflict(group, requests):
+    if len(group) > 1:
         for i in range(len(group)):
             l1, i1, c1, pos1 = group[i]
 
@@ -254,6 +248,15 @@ def has_conflict(individual, requests):
 
                 if any(conditions):
                     return True
+
+    return False
+def has_conflict(individual, requests):
+    # Goup = [(location, input, task, position dans individual)]
+    groups = form_send_group(individual, requests, with_skip=False)
+    for time, group in groups.items():
+        has = group_has_conflict(group, requests)
+        if has:
+            return True
 
     return False
 
@@ -370,7 +373,7 @@ def correct_population(population, requests):
     corrected_population = []
 
     for individual in population:
-        corrected_individual = individual_conflict_corrector(individual, requests)
+        corrected_individual = simple_individual_corrector(individual, requests)
         corrected_population.append(corrected_individual)
 
     return corrected_population
@@ -438,8 +441,16 @@ def selection(population, fitness_values):
 # Algorithme génétique
 def genetic_algorithm(tasks, users, requests, inputs, outputs, server_processing_capacity, population_size, generations,
                       mutation_rate, probability_skip, draw=False, fitness_func=None):
+    def reverse_count(func):
+        def wrapper(*args, **kwargs):
+            result = func(*args, **kwargs)
+            return len(requests)  - result
+
+        return wrapper
     if fitness_func == None:
         fitness_func = evaluate_individual
+        wrapped_for_count_inv = reverse_count(count_individual)
+        fitness_func = wrapped_for_count_inv
     population = []
     while len(population) < population_size:
         individual = []
