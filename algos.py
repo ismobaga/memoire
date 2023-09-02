@@ -3,7 +3,7 @@ import numpy as np
 from genetic import reverse_send_group, LOCAL_LOCATION, SERVER_LOCATION, has_conflict, evaluate_individual, \
     count_individual
 
-
+# Probleme to fix : le nombre de taches execute diminus  apres des iterations
 
 def can_be_add(group, value):
     if len(group) >= 1:
@@ -140,24 +140,30 @@ def heuristic(tasks, users, requests, inputs, outputs, server_processing_capacit
                     time_for_group = sendtime
                     break
 
-            for sub_position, req in enumerate(urequests):
+            sub_position = 0
+            while sub_position < len(urequests):
                 groups[time_for_group].append((location, req.input_index, req.task, position + sub_position))
                 if len(requests) <= (position + sub_position):
                     print(position, sub_position)
                 individual = reverse_send_group(groups, len(requests))
                 if has_conflict(individual, requests):
                     groups[time_for_group].pop()
+                    sub_position +=1
+                else:
+                    urequests.pop(sub_position)
+           
 
             loc_groups[location] = groups
             individual = reverse_send_group(groups, len(requests))
             score = count_individual(individual, requests, tasks, users, inputs, outputs, server_processing_capacity)
             loc_scores[location] = score
-            # print("score", score)
+
         # Compare les deux version et choisi le meilleur
         # print(loc_scores)
         location = max(loc_scores, key=loc_scores.get)
         # print("max loc", location, loc_scores[location])
         final_groups = loc_groups[location]
+        print("score", score, "position", position, "restant", len(urequests))
         # print("final", final_groups)
         # print("local", loc_groups[LOCAL_LOCATION])
         # print("serve", loc_groups[SERVER_LOCATION])
