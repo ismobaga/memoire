@@ -17,6 +17,7 @@ def count_schedule(schedule, tasks, users, inputs, outputs, server_processing_ca
 
     for send_time, task_schedule in schedule.items():
         if send_time == -1:
+            total_penalty += len(task_schedule)
             continue
         if not is_valid_slot_scheduled(task_schedule):
             total_penalty += len(task_schedule)
@@ -83,14 +84,15 @@ def fitness_soft(individual, requests, tasks, users, inputs, outputs, server_pro
                 total = send_time + execution_time + transfert_time
                 delay = total - (req.arrival_time + req.deadline)
                 penalty = max(0, delay)  # Soft deadline penalty
+
                 if penalty >= 4:
-                    penalty = 1
-                elif penalty >= 3:
-                    penalty = 0.75
-                elif penalty >= 2:
-                    penalty = 0.5
+                    penalty = 2
+                # elif penalty >= 3:
+                #     penalty = 0.75
+                # elif penalty >= 2:
+                #     penalty = 0.5
                 elif penalty>0:
-                    penalty = 0.25
+                    penalty = 1
                 total_penalty += penalty
     return total_penalty
 
@@ -227,12 +229,26 @@ def form_send_group(individual, requests, with_skip=False):
             send_times[send_time].append((location, req.input_index, req.task, position))
     return send_times
 
+def reverse_send_group(send_times, num_requests, with_skip=False):
+    individual = [SKIP_ACTION_VALUE] * num_requests
+    for send_time, group in send_times.items():
+        if send_time == -1 and with_skip:
+            for item in group:
+                location, input_index, task, position = item
+                individual[position] = SKIP_ACTION_VALUE
+        else:
+            for item in group:
+                location, input_index, task, position = item
+                # print(individual)
+                # print("len",num_requests, "position", position )
+                individual[position] = (location, send_time)
+    return individual
 def group_has_conflict(group, requests):
     if len(group) > 1:
         for i in range(len(group)):
             l1, i1, c1, pos1 = group[i]
 
-            for j in range(i + 1, len(requests)):
+            for j in range(i + 1, len(group)):
                 l2, i2, c2, pos2 = group[j]
 
                 conditions = [
@@ -373,7 +389,7 @@ def correct_population(population, requests):
     corrected_population = []
 
     for individual in population:
-        corrected_individual = simple_individual_corrector(individual, requests)
+        corrected_individual = individual_conflict_corrector(individual, requests)
         corrected_population.append(corrected_individual)
 
     return corrected_population

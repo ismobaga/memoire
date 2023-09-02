@@ -109,3 +109,19 @@ Lorsque deux réponses (C1, I1, L1) et (C2, I2, L2) pour deux requêtes sont env
 
 Nouvau indivudu
 choir seulement quand repondre
+
+
+
+### Dynamic
+A voir
+Tableau[tache][users][input][location]
+
+
+
+
+
+
+##### TODO
+LES DEUX FITNESS SUR LA MEME COURBES ET MEME RESEAXU
+
+Couper a 200 generations
