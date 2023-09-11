@@ -30,7 +30,7 @@ MEC_RADIUS = 100
 
 # Utilisation de l'algorithme génétique
 POPULATION_SIZE = 100
-GENERATIONS = 500
+GENERATIONS = 200
 MUTATION_RATE = 0.1
 PROBABILITY_SKIP = 0.05
 results = {}
@@ -94,7 +94,7 @@ for name, result in results.items():
     plt.pause(0.1)  # pause 0.1 sec, to force a plot redraw
 
 plt.legend()
-plt.savefig(f"number-{uid}.png")
+plt.savefig(f"number-{uid}.eps")
 plt.show()
 
 # best_count = count_schedule(best_schedule, tasks, users, inputs, outputs, SERVER_COMPUTATION_CAPACITY)

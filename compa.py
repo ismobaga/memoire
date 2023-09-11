@@ -53,8 +53,8 @@ fitness_soft.__name__ : "Proportional Soft (0-1)",
 non_exec_count.__name__ : "Non executed number",
 heuristic.__name__ : "Heuristique",
 }
-ITERATION = 10
-nreqs_max_per_time = [5, 10, 20]
+ITERATION = 11
+nreqs_max_per_time = nusers= [5, 10, 20]
 mean_requests = [0]* len(nreqs_max_per_time)
 results = defaultdict(lambda : [0] * len(nreqs_max_per_time))
 for i, N_REQUESTS in enumerate(nreqs_max_per_time ):
@@ -77,26 +77,26 @@ for i, N_REQUESTS in enumerate(nreqs_max_per_time ):
                                        MUTATION_RATE, PROBABILITY_SKIP, draw=False, fitness_func=fit_func)
             results[fit_func.__name__][i] += result["best_count"]
 
-        # _, count = heuristic(tasks, users, requests, inputs, outputs, SERVER_COMPUTATION_CAPACITY)
-        # results[heuristic.__name__][i] += count
+        _, count = heuristic(tasks, users, requests, inputs, outputs, SERVER_COMPUTATION_CAPACITY)
+        results[heuristic.__name__][i] += count
     for key in results:
         results[key][i] /= ITERATION
     mean_requests[i] /= ITERATION
 uid = f"{ITERATION}-{len(fnames)}"
 fig = plt.figure(figsize=(10, 6))
-plt.xlabel("Nombre moyen de request")
+plt.xlabel("Nombre users")
 plt.ylabel("Count values")
 plt.title("Nombre de requests exec par nombre de request")
 plt.grid(True)
 for name, result in results.items():
-    plt.plot(mean_requests, result,
+    plt.plot(nusers, result,
              label=f"function {fnames[name]}")
     fig.canvas.draw()
     print("DRAW", name)
     plt.pause(0.1)  # pause 0.1 sec, to force a plot redraw
 
 plt.legend()
-plt.savefig(f"cout-request-{uid}.png")
+plt.savefig(f"result/cout-user-{uid}.eps",  format='eps')
 plt.show()
 #
 # fig = plt.figure(figsize=(10, 6))

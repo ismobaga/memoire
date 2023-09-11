@@ -140,18 +140,14 @@ def heuristic(tasks, users, requests, inputs, outputs, server_processing_capacit
                     time_for_group = sendtime
                     break
 
-            sub_position = 0
-            while sub_position < len(urequests):
+            for sub_position, req in enumerate(urequests):
                 groups[time_for_group].append((location, req.input_index, req.task, position + sub_position))
                 if len(requests) <= (position + sub_position):
                     print(position, sub_position)
                 individual = reverse_send_group(groups, len(requests))
                 if has_conflict(individual, requests):
                     groups[time_for_group].pop()
-                    sub_position +=1
-                else:
-                    urequests.pop(sub_position)
-           
+
 
             loc_groups[location] = groups
             individual = reverse_send_group(groups, len(requests))
@@ -163,13 +159,14 @@ def heuristic(tasks, users, requests, inputs, outputs, server_processing_capacit
         location = max(loc_scores, key=loc_scores.get)
         # print("max loc", location, loc_scores[location])
         final_groups = loc_groups[location]
-        print("score", score, "position", position, "restant", len(urequests))
+        # print("score", score, "position", position, "restant", len(urequests))
         # print("final", final_groups)
         # print("local", loc_groups[LOCAL_LOCATION])
         # print("serve", loc_groups[SERVER_LOCATION])
         position += 1
 
     individual = reverse_send_group(final_groups, len(requests))
+    print("fin heuristic")
     return individual, count_individual(individual, requests, tasks, users, inputs, outputs, server_processing_capacity)
 
 

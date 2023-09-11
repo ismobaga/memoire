@@ -125,3 +125,7 @@ Tableau[tache][users][input][location]
 LES DEUX FITNESS SUR LA MEME COURBES ET MEME RESEAXU
 
 Couper a 200 generations
+
+### Heuristique 
+- le  nombre diminu par iterations
+- probleme je n'enleve pas des requete quand c'est ajouté a un group (j'enleve seulement s'il init the group)
