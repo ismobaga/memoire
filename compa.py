@@ -5,7 +5,7 @@ from matplotlib import pyplot as plt
 from algos import heuristic
 from data import User, Task, Request, generata_sytem
 from genetic import genetic_algorithm, count_individual, count_schedule, fitness_soft, evaluate_individual, \
-    SKIP_ACTION_VALUE
+    SKIP_ACTION_VALUE, has_conflict
 
 # Parametre
 
@@ -53,8 +53,8 @@ fitness_soft.__name__ : "Proportional Soft (0-1)",
 non_exec_count.__name__ : "Non executed number",
 heuristic.__name__ : "Heuristique",
 }
-ITERATION = 11
-nreqs_max_per_time = nusers= [5, 10, 20]
+ITERATION = 1
+nreqs_max_per_time = nusers= [10]
 mean_requests = [0]* len(nreqs_max_per_time)
 results = defaultdict(lambda : [0] * len(nreqs_max_per_time))
 for i, N_REQUESTS in enumerate(nreqs_max_per_time ):
@@ -77,7 +77,8 @@ for i, N_REQUESTS in enumerate(nreqs_max_per_time ):
                                        MUTATION_RATE, PROBABILITY_SKIP, draw=False, fitness_func=fit_func)
             results[fit_func.__name__][i] += result["best_count"]
 
-        _, count = heuristic(tasks, users, requests, inputs, outputs, SERVER_COMPUTATION_CAPACITY)
+        indivi, count = heuristic(tasks, users, requests, inputs, outputs, SERVER_COMPUTATION_CAPACITY)
+        
         results[heuristic.__name__][i] += count
     for key in results:
         results[key][i] /= ITERATION
@@ -89,15 +90,18 @@ plt.ylabel("Count values")
 plt.title("Nombre de requests exec par nombre de request")
 plt.grid(True)
 for name, result in results.items():
+    print(fnames[name], result)
+
+    continue
     plt.plot(nusers, result,
              label=f"function {fnames[name]}")
     fig.canvas.draw()
     print("DRAW", name)
     plt.pause(0.1)  # pause 0.1 sec, to force a plot redraw
 
-plt.legend()
-plt.savefig(f"result/cout-user-{uid}.eps",  format='eps')
-plt.show()
+# plt.legend()
+# plt.savefig(f"result/cout-user-{uid}.eps",  format='eps')
+# plt.show()
 #
 # fig = plt.figure(figsize=(10, 6))
 # plt.xlabel("Generation")
