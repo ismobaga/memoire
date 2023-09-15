@@ -2,6 +2,7 @@ from collections import defaultdict
 
 from matplotlib import pyplot as plt
 
+from algos import heuristic
 from data import User, Task, Request, generata_sytem
 from genetic import genetic_algorithm, count_individual, count_schedule, SKIP_ACTION_VALUE
 
@@ -46,6 +47,8 @@ for MAX_DEADLINE in range(MIN_DEADLINE+1, 8+1):
                                       GENERATIONS,
                                       MUTATION_RATE, PROBABILITY_SKIP, draw=False)
     results[MAX_DEADLINE] = result
+    ind, count = heuristic(tasks, users, requests, inputs, outputs, SERVER_COMPUTATION_CAPACITY)
+    print("heuristique ", count/len(requests))
 
 
 uid = f"{N_USERS}-{N_TASKS}-{GENERATIONS}-count"

@@ -2,7 +2,7 @@ import numpy as np
 from collections import defaultdict
 import random
 
-from utils import plot
+from utils import plot, individual_conflict_corrector, is_valid_slot_scheduled, form_send_group
 
 LOCAL_LOCATION = 1
 SERVER_LOCATION = 2
@@ -91,7 +91,7 @@ def fitness_soft(individual, requests, tasks, users, inputs, outputs, server_pro
                 #     penalty = 0.75
                 # elif penalty >= 2:
                 #     penalty = 0.5
-                elif penalty>0:
+                elif penalty > 0:
                     penalty = 1
                 total_penalty += penalty
     return total_penalty
@@ -161,228 +161,9 @@ def mutate(individual, mutation_rate, requests):
         if np.random.rand() < mutation_rate:
             send_time = np.random.randint(req.arrival_time, req.arrival_time + req.deadline)
             actions = [(SERVER_LOCATION, send_time), (LOCAL_LOCATION, send_time), SKIP_ACTION_VALUE]
-            action_id = np.random.choice([0, 1, 2])
+            action_id = np.random.choice([0, 1, 2], p=[0.45, 0.45, 0.1])
             mutated_individual[i] = actions[action_id]  # TODO : Ajouter une faible probabilité pour le skip
     return mutated_individual
-
-
-def is_valid_slot_scheduled(group):
-    if len(group):
-        group_location, send_time = group[0][1]  # action
-        group_input = group[0][0].input_index
-        group_task = group[0][0].task
-
-        for req, action in group:
-            if group_location == LOCAL_LOCATION:
-                if req.input_index == group_input and group_location == LOCAL_LOCATION:
-                    continue
-                else:
-                    return False
-            else:
-                if req.task == group_task:
-                    continue
-                else:
-                    return False
-    return True
-
-
-def is_valid_individual(individual, tasks, users, requests):
-    send_times = defaultdict(list)
-    for i, (action, req) in enumerate(zip(individual, requests)):
-        if action is SKIP_ACTION_VALUE:
-            continue
-
-        location, send_time = action
-        send_times[send_time].append((location, req.input_index, req.task))
-    for send_time, group in send_times.items():
-        group_location = None
-        group_input = 0
-        group_task = 0
-        if len(group):
-            group_location, group_input, group_task = group[0]
-        for element in group:
-            if group_location == LOCAL_LOCATION:
-                if element[1] == group_input and group_location == LOCAL_LOCATION:
-                    continue
-                else:
-                    return False
-            else:
-                if element[2] == group_task:
-                    continue
-                else:
-                    return False
-
-    return True
-
-
-def form_send_group(individual, requests, with_skip=False):
-    send_times = defaultdict(list)
-    for i, (action, req) in enumerate(zip(individual, requests)):
-
-        position = i
-        if action is SKIP_ACTION_VALUE:
-            if with_skip:
-                send_times[-1].append((-1, req.input_index, req.task, position))
-
-        else:
-            location, send_time = action
-            send_times[send_time].append((location, req.input_index, req.task, position))
-    return send_times
-
-def reverse_send_group(send_times, num_requests, with_skip=False):
-    individual = [SKIP_ACTION_VALUE] * num_requests
-    for send_time, group in send_times.items():
-        if send_time == -1 and with_skip:
-            for item in group:
-                location, input_index, task, position = item
-                individual[position] = SKIP_ACTION_VALUE
-        else:
-            for item in group:
-                location, input_index, task, position = item
-                # print(individual)
-                # print("len",num_requests, "position", position )
-                individual[position] = (location, send_time)
-    return individual
-def group_has_conflict(group, requests):
-    if len(group) > 1:
-        for i in range(len(group)):
-            l1, i1, c1, pos1 = group[i]
-
-            for j in range(i + 1, len(group)):
-                l2, i2, c2, pos2 = group[j]
-
-                conditions = [
-                    (c1 == c2 and i1 == i2 and l1 != l2),
-                    (c1 == c2 and i1 != i2 and l1 != l2),
-                    (c1 != c2 and i1 != i2 and l1 != l2),
-                    (c1 == c2 and i1 != i2 and l1 == l2),
-                    (c1 != c2 and i1 != i2 and l1 == l2 and l1 != LOCAL_LOCATION),
-                    (c1 != c2 and i1 == i2 and l1 == l2 and l1 != LOCAL_LOCATION),
-                    (c1 != c2 and i1 == i2 and l1 != l2),
-                    (c1 != c2 and i1 != i2 and l1 == l2)
-                ]
-
-                if any(conditions):
-                    return True
-
-    return False
-def has_conflict(individual, requests):
-    # Goup = [(location, input, task, position dans individual)]
-    groups = form_send_group(individual, requests, with_skip=False)
-    for time, group in groups.items():
-        has = group_has_conflict(group, requests)
-        if has:
-            return True
-
-    return False
-
-
-def individual_conflict_corrector(individual, requests):
-    # Goup = [(location, input, task, position dans individual)]
-    groups = form_send_group(individual, requests, with_skip=False)
-    for time, group in groups.items():
-        if len(group) <= 1:
-            # pas besoin de change
-            continue
-        for i in range(len(group) - 1, -1, -1):
-            l1, i1, c1, pos1 = group[i]
-            valid = True
-
-            for j in range(len(group) - 2, -1, -1):
-                l2, i2, c2, pos2 = group[j]
-
-                if c1 == c2 and i1 == i2 and l1 != l2:
-                    if random.random() < 0.5:
-                        l1 = l2  # Ajuste l'emplacement pour égaliser
-                    else:
-                        l2 = l1
-                elif c1 != c2 and i1 == i2 and l1 == l2:
-                    if l1 != LOCAL_LOCATION:
-                        l1 = l2 = LOCAL_LOCATION  # Ajuste à LOCAL
-                    else:
-                        valid = False  # Marque la première réponse comme supprimée
-                        break
-                elif c1 == c2 and i1 == i2 and l1 == l2:
-                    continue
-                else:
-                    valid = False
-                    break
-
-            if valid:
-                individual[pos1] = (l1, time)
-
-            else:
-                individual[pos1] = SKIP_ACTION_VALUE
-                del group[i]
-
-    return individual
-
-
-def simple_individual_corrector(individual, requests):
-    send_times = defaultdict(list)
-    for i, (action, req) in enumerate(zip(individual, requests)):
-        if action is SKIP_ACTION_VALUE:
-            continue
-
-        location, send_time = action
-        position = i
-        send_times[send_time].append((location, req.input_index, req.task, position))
-
-    for send_time, group in send_times.items():
-        group_location = None
-        group_input = 0
-        group_task = 0
-        if len(group):
-            group_location, group_input, group_task, position = group[0]
-        task_fixed = False
-        input_fixed = False
-        lacation = False
-        while not task_fixed and not input_fixed:
-            input_fixed = True
-            task_fixed = True
-            for element in group:
-                location, input_index, task, position = element
-                if location != group_location:
-                    group_location = -1
-
-                if input_index != group_input:
-                    group_input = -1  # Signal that inputs are not the same
-                    input_fixed = False
-
-                if task != group_task:
-                    group_task = -1  # Signal that tasks are not the same
-                    task_fixed = False
-
-            # Update the individual based on group corrections
-            for i, element in enumerate(group):
-                _, _, _, position = element
-                if group_input != -1 and group_location != -1:
-                    pass
-                if group_input != -1 and group_location == -1:
-
-                    individual[position] = (LOCAL_LOCATION, send_time)
-                elif task_fixed and group_input == -1:
-                    # Ici l faut decide de  ne pas execute certaines requetes
-                    skip_id = np.random.randint(len(group))
-                    element_to_skip = group[skip_id]
-                    _, _, _, position = element_to_skip
-                    individual[position] = SKIP_ACTION_VALUE
-                    group.remove(element_to_skip)
-                if group_input != -1:
-                    input_fixed = True
-                if group_task != -1:
-                    task_fixed = True
-                else:
-                    # Ici l faut decide de  ne pas execute certaines requetes
-                    skip_id = np.random.randint(len(group))
-                    element_to_skip = group[skip_id]
-                    _, _, _, position = element_to_skip
-                    individual[position] = SKIP_ACTION_VALUE
-                    group.remove(element_to_skip)
-
-                # individual[i] = (location, requests[i].arrival_time)
-
-    return individual
 
 
 def correct_population(population, requests):
@@ -405,6 +186,15 @@ def selection(population, fitness_scores, population_size, elite_size):
     return selected
 
 
+def selection_elites(population, fitness_values, elite_size):
+    # Sélection des élites de la population actuelle
+    elites_indices = np.argsort(fitness_values)[:int(elite_size)]
+    elites = []
+    for indice in elites_indices:
+        elites.append(population[indice])
+    return elites
+
+
 def roulette_wheel_selection(population, fitness_scores, population_size, elite_size):
     # Calculer la somme totale des fitness
     total_fitness = sum(fitness_scores)
@@ -421,20 +211,6 @@ def roulette_wheel_selection(population, fitness_scores, population_size, elite_
         selected.append(choice)
     return selected
 
-
-def select_parents(population, fitness_scores, population_size):
-    # Calcul des scores de fitness inversés (plus petit est meilleur)
-    inverse_fitness_scores = 1 / np.array(fitness_scores)
-
-    # Calcul des poids pour la sélection roulette
-    total_inverse_fitness = np.sum(inverse_fitness_scores)
-    roulette_weights = inverse_fitness_scores / total_inverse_fitness
-    # print(len(list(range(population_size))), len(roulette_weights), len(inverse_fitness_scores))
-    # Sélection des parents (roulette)
-    selected_parents_indices = np.random.choice(range(population_size), size=population_size // 2, p=roulette_weights)
-    selected_parents = [population[index] for index in selected_parents_indices]
-
-    return selected_parents
 
 def selection(population, fitness_values):
     total_fitness = sum(fitness_values)
@@ -454,29 +230,166 @@ def selection(population, fitness_values):
                 break
 
 
-# Algorithme génétique
+def select_parents(population, size):
+    return random.sample(population, size)
+
+
+def crossover_population(population, size, parents=None):
+    if parents is None:
+        parents = select_parents(population, size)
+
+    # Effectue le croisement
+    children = []
+    for i in range(0, len(parents), 2):
+        parent1 = parents[i]
+        parent2 = parents[i + 1]
+        child1, child2 = crossover(parent1, parent2)
+        children.append(child1)
+        children.append(child2)
+    return children
+
+
+def mutate_population(population, mutation_rate, requests):
+    for i in range(len(population)):
+        if random.random() < mutation_rate:
+            population[i] = mutate(population[i], mutation_rate, requests)
+    return population
+
+
+def get_next_generation(population, tasks, users, requests, inputs, outputs, server_processing_capacity, elite_size,
+                        fitness_func, croisement_rate, mutation_rate):
+    fitness_scores = [fitness_func(individual, requests, tasks, users, inputs, outputs, server_processing_capacity) for
+                      individual in population]
+
+    elites = selection_elites(population, fitness_scores, elite_size)
+    # parents_size = len(population) * croisement_rate
+    parents_size = len(population) - elite_size
+    # parents = selection_elites(population, fitness_scores, parents_size)
+    parents = None  # select_parents(population, parents_size)
+
+    offspring = crossover_population(population, parents_size, parents)
+
+    children = mutate_population(offspring, mutation_rate, requests)
+    new_population = elites + children
+    # corrected_population = correct_population(new_population, requests)
+
+    corrected_population = correct_population(new_population, requests)
+
+    return corrected_population
+
+
+def create_individual(requests, probability_skip):
+    individual = []
+    for req in requests:
+        if np.random.rand() < probability_skip:
+            individual.append(SKIP_ACTION_VALUE)
+        else:
+            location = np.random.choice([SERVER_LOCATION, LOCAL_LOCATION])
+            send_time = np.random.randint(req.arrival_time, req.arrival_time + req.deadline)
+            individual.append((location, send_time))
+    return individual
+
+
+def create_initial_population(requests, population_size, probability_skip):
+    population = [create_individual(requests, probability_skip) for i in range(population_size)]
+    return population
+
+
 def genetic_algorithm(tasks, users, requests, inputs, outputs, server_processing_capacity, population_size, generations,
                       mutation_rate, probability_skip, draw=False, fitness_func=None):
     def reverse_count(func):
         def wrapper(*args, **kwargs):
             result = func(*args, **kwargs)
-            return len(requests)  - result
+            return len(requests) - result
 
         return wrapper
+
+    if fitness_func == None:
+        fitness_func = evaluate_individual
+        wrapped_for_count_inv = reverse_count(count_individual)
+        fitness_func = wrapped_for_count_inv
+
+    elite_size = 20
+    croisement_rate = 0.2
+    fitnesses = []
+    population = create_initial_population(requests, population_size, probability_skip)
+    population = correct_population(population, requests)
+    best_fitness_per_generation = []
+    best_count_per_generation = []
+    best_percent_per_generation = []
+    for generation in range(generations):
+
+        fitness_scores = []
+        for individual in population:
+            fitness = fitness_func(individual, requests, tasks, users, inputs, outputs, server_processing_capacity)
+
+            fitness_scores.append(fitness)
+        min_fit = min(fitness_scores)
+        # Append the best fitness of the current generation to the list
+        best_fitness_per_generation.append(min_fit)
+        best_id = np.array(fitness_scores).argmin()
+        best_individual = population[best_id]
+        best_individual = population[best_id]
+        # print("Gneneration", generation, "min fit", min_fit, fitness_scores[best_id], best_individual)
+        count = count_individual(best_individual, requests, tasks, users, inputs, outputs, server_processing_capacity)
+        best_count_per_generation.append(100*count/len(requests))
+        # best_percent_per_generation.append(100 *
+        #                                    count_individual(best_individual, requests, tasks, users, inputs, outputs,
+        #                                                     server_processing_capacity) / len(requests))
+
+        if generation % 5 == 0 and draw:
+            fitness_scores = [
+                fitness_func(individual, requests, tasks, users, inputs, outputs, server_processing_capacity)
+                for
+                individual in population]
+
+            ef = min(fitness_scores)
+            fitnesses += [[generation, ef]]
+            population = sorted(population, key=lambda x: fitness_func(x, requests, tasks, users, inputs, outputs,
+                                                                       server_processing_capacity))
+        population = get_next_generation(population, tasks, users, requests, inputs, outputs,
+                                         server_processing_capacity, elite_size, fitness_func, croisement_rate,
+                                         mutation_rate)
+    if draw:
+        fitness = np.array(fitnesses)
+        print(fitness)
+        plot(fitness[:, 0], fitness[:, 1], 'o-', title=fitness_func.__name__)
+    best_individual = min(population, key=lambda ind: fitness_func(ind, requests, tasks, users, inputs, outputs,
+                                                                   server_processing_capacity))
+
+    data = {
+        'generations': generations,
+        'best_fitness_per_generation': best_fitness_per_generation,
+        'best_count_per_generation': best_count_per_generation,
+
+        'nrequests': len(requests),
+        # 'population': population,
+        'best_individual': best_individual,
+        'best_count': count_individual(best_individual, requests, tasks, users, inputs, outputs,
+                                       server_processing_capacity)
+    }
+
+    return data
+
+
+# Algorithme génétique
+def genetic_algorithm2(tasks, users, requests, inputs, outputs, server_processing_capacity, population_size,
+                       generations,
+                       mutation_rate, probability_skip, draw=False, fitness_func=None):
+    def reverse_count(func):
+        def wrapper(*args, **kwargs):
+            result = func(*args, **kwargs)
+            return len(requests) - result
+
+        return wrapper
+
     if fitness_func == None:
         fitness_func = evaluate_individual
         wrapped_for_count_inv = reverse_count(count_individual)
         fitness_func = wrapped_for_count_inv
     population = []
     while len(population) < population_size:
-        individual = []
-        for req in requests:
-            if np.random.rand() < probability_skip:
-                individual.append(SKIP_ACTION_VALUE)
-            else:
-                location = np.random.choice([SERVER_LOCATION, LOCAL_LOCATION])
-                send_time = np.random.randint(req.arrival_time, req.arrival_time + req.deadline)
-                individual.append((location, send_time))
+        individual = create_individual(requests, probability_skip)
         # if is_valid_individual(individual, tasks, users, requests):
         population.append(individual)
     population = correct_population(population, requests)
@@ -489,7 +402,7 @@ def genetic_algorithm(tasks, users, requests, inputs, outputs, server_processing
         # Évaluation de la population
 
         population = sorted(population, key=lambda x: fitness_func(x, requests, tasks, users, inputs, outputs,
-                                                                          server_processing_capacity))
+                                                                   server_processing_capacity))
         fitness_scores = []
         for individual in population:
             fitness = fitness_func(individual, requests, tasks, users, inputs, outputs, server_processing_capacity)
@@ -536,7 +449,7 @@ def genetic_algorithm(tasks, users, requests, inputs, outputs, server_processing
 
     # Sélection du meilleur individu
     best_individual = min(population, key=lambda ind: fitness_func(ind, requests, tasks, users, inputs, outputs,
-                                                                          server_processing_capacity))
+                                                                   server_processing_capacity))
     data = {
         'generations': generations,
         'best_fitness_per_generation': best_fitness_per_generation,
@@ -545,7 +458,7 @@ def genetic_algorithm(tasks, users, requests, inputs, outputs, server_processing
         # 'population': population,
         'best_individual': best_individual,
         'best_fitness': fitness_func(best_individual, requests, tasks, users, inputs, outputs,
-                                            server_processing_capacity),
+                                     server_processing_capacity),
         'best_count': count_individual(best_individual, requests, tasks, users, inputs, outputs,
                                        server_processing_capacity),
         'best_groups': form_send_group(best_individual, requests, True)

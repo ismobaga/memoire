@@ -5,7 +5,8 @@ from matplotlib import pyplot as plt
 from algos import heuristic
 from data import User, Task, Request, generata_sytem
 from genetic import genetic_algorithm, count_individual, count_schedule, fitness_soft, evaluate_individual, \
-    SKIP_ACTION_VALUE, has_conflict
+    SKIP_ACTION_VALUE
+from utils import tikzplotlib_fix_ncols
 
 # Parametre
 
@@ -31,7 +32,7 @@ MEC_RADIUS = 100
 
 # Utilisation de l'algorithme génétique
 POPULATION_SIZE = 100
-GENERATIONS = 50
+GENERATIONS = 300
 MUTATION_RATE = 0.1
 PROBABILITY_SKIP = 0.05
 
@@ -48,17 +49,17 @@ non_exec_count = reverse_count(count_individual)
 
 functions = [evaluate_individual, fitness_soft, non_exec_count]
 fnames ={
-    evaluate_individual.__name__ : " Soft deadline penalty",
+    evaluate_individual.__name__ : "Soft deadline penalty",
 fitness_soft.__name__ : "Proportional Soft (0-1)",
 non_exec_count.__name__ : "Non executed number",
 heuristic.__name__ : "Heuristique",
 }
 ITERATION = 1
-nreqs_max_per_time = nusers= [10]
+nreqs_max_per_time = nusers= [5, 10, 15, 20, 25]
 mean_requests = [0]* len(nreqs_max_per_time)
 results = defaultdict(lambda : [0] * len(nreqs_max_per_time))
 for i, N_REQUESTS in enumerate(nreqs_max_per_time ):
-    print("iteration", i)
+    # print("iteration", i)
     for j in range(ITERATION):
         N_USERS = N_REQUESTS
         tasks, users, inputs, outputs, requests = generata_sytem(N_TASKS, N_USERS, N_INPUT, N_REQUESTS,
@@ -75,33 +76,41 @@ for i, N_REQUESTS in enumerate(nreqs_max_per_time ):
             result = genetic_algorithm(tasks, users, requests, inputs, outputs, SERVER_COMPUTATION_CAPACITY, POPULATION_SIZE,
                                        GENERATIONS,
                                        MUTATION_RATE, PROBABILITY_SKIP, draw=False, fitness_func=fit_func)
-            results[fit_func.__name__][i] += result["best_count"]
+            results[fit_func.__name__][i] += result["best_count"]/len(requests)
+            print(i, j,fnames[fit_func.__name__] , N_REQUESTS, len(requests), result["best_count"])
 
         indivi, count = heuristic(tasks, users, requests, inputs, outputs, SERVER_COMPUTATION_CAPACITY)
-        
-        results[heuristic.__name__][i] += count
+        # print(i, j,fnames[heuristic.__name__], N_REQUESTS, len(requests), count)
+
+        results[heuristic.__name__][i] += count/len(requests)
     for key in results:
         results[key][i] /= ITERATION
     mean_requests[i] /= ITERATION
-uid = f"{ITERATION}-{len(fnames)}"
+uid = f"{ITERATION}-{GENERATIONS}-{len(fnames)}-tkz"
 fig = plt.figure(figsize=(10, 6))
 plt.xlabel("Nombre users")
 plt.ylabel("Count values")
 plt.title("Nombre de requests exec par nombre de request")
 plt.grid(True)
 for name, result in results.items():
-    print(fnames[name], result)
+    # print(fnames[name], result)
 
-    continue
+    # continue
     plt.plot(nusers, result,
              label=f"function {fnames[name]}")
     fig.canvas.draw()
     print("DRAW", name)
     plt.pause(0.1)  # pause 0.1 sec, to force a plot redraw
 
-# plt.legend()
+plt.legend()
 # plt.savefig(f"result/cout-user-{uid}.eps",  format='eps')
-# plt.show()
+
+
+tikzplotlib_fix_ncols(fig)
+import tikzplotlib
+tikzplotlib.save("figure.pgf")
+
+plt.show()
 #
 # fig = plt.figure(figsize=(10, 6))
 # plt.xlabel("Generation")

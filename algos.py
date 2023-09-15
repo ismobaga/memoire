@@ -1,7 +1,9 @@
 from collections import defaultdict
 import numpy as np
-from genetic import reverse_send_group, LOCAL_LOCATION, SERVER_LOCATION, has_conflict, evaluate_individual, \
+from genetic import  LOCAL_LOCATION, SERVER_LOCATION, evaluate_individual, \
     count_individual
+from utils import reverse_send_group, has_conflict
+
 
 # Probleme to fix : le nombre de taches execute diminus  apres des iterations
 
@@ -98,6 +100,6 @@ def heuristic(tasks, users, requests, inputs, outputs, server_processing_capacit
         position += 1
 
     individual = reverse_send_group(final_groups, len(requests), True)
-    print("fin heuristic")
+    # print("fin heuristic")
     return individual, count_individual(individual, requests, tasks, users, inputs, outputs, server_processing_capacity)
 

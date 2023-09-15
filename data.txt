@@ -1,0 +1,200 @@
+0 0 Soft deadline penalty 5 125 16
+0 0 Proportional Soft (0-1) 5 125 30
+0 0 Non executed number 5 125 30
+0 0 Heuristique 5 125 25
+0 1 Soft deadline penalty 5 97 28
+0 1 Proportional Soft (0-1) 5 97 36
+0 1 Non executed number 5 97 37
+0 1 Heuristique 5 97 42
+0 2 Soft deadline penalty 5 104 27
+0 2 Proportional Soft (0-1) 5 104 35
+0 2 Non executed number 5 104 34
+0 2 Heuristique 5 104 20
+0 3 Soft deadline penalty 5 88 18
+0 3 Proportional Soft (0-1) 5 88 30
+0 3 Non executed number 5 88 30
+0 3 Heuristique 5 88 23
+0 4 Soft deadline penalty 5 91 22
+0 4 Proportional Soft (0-1) 5 91 28
+0 4 Non executed number 5 91 32
+0 4 Heuristique 5 91 10
+0 5 Soft deadline penalty 5 97 18
+0 5 Proportional Soft (0-1) 5 97 25
+0 5 Non executed number 5 97 29
+0 5 Heuristique 5 97 6
+0 6 Soft deadline penalty 5 122 27
+0 6 Proportional Soft (0-1) 5 122 33
+0 6 Non executed number 5 122 33
+0 6 Heuristique 5 122 29
+0 7 Soft deadline penalty 5 111 24
+0 7 Proportional Soft (0-1) 5 111 34
+0 7 Non executed number 5 111 38
+0 7 Heuristique 5 111 19
+0 8 Soft deadline penalty 5 107 33
+0 8 Proportional Soft (0-1) 5 107 43
+0 8 Non executed number 5 107 40
+0 8 Heuristique 5 107 67
+0 9 Soft deadline penalty 5 84 28
+0 9 Proportional Soft (0-1) 5 84 32
+0 9 Non executed number 5 84 34
+0 9 Heuristique 5 84 20
+1 0 Soft deadline penalty 10 213 32
+1 0 Proportional Soft (0-1) 10 213 45
+1 0 Non executed number 10 213 44
+1 0 Heuristique 10 213 20
+1 1 Soft deadline penalty 10 215 28
+1 1 Proportional Soft (0-1) 10 215 39
+1 1 Non executed number 10 215 41
+1 1 Heuristique 10 215 51
+1 2 Soft deadline penalty 10 184 20
+1 2 Proportional Soft (0-1) 10 184 35
+1 2 Non executed number 10 184 35
+1 2 Heuristique 10 184 12
+1 3 Soft deadline penalty 10 185 27
+1 3 Proportional Soft (0-1) 10 185 37
+1 3 Non executed number 10 185 37
+1 3 Heuristique 10 185 17
+1 4 Soft deadline penalty 10 199 21
+1 4 Proportional Soft (0-1) 10 199 34
+1 4 Non executed number 10 199 36
+1 4 Heuristique 10 199 15
+1 5 Soft deadline penalty 10 186 22
+1 5 Proportional Soft (0-1) 10 186 34
+1 5 Non executed number 10 186 37
+1 5 Heuristique 10 186 14
+1 6 Soft deadline penalty 10 202 21
+1 6 Proportional Soft (0-1) 10 202 41
+1 6 Non executed number 10 202 39
+1 6 Heuristique 10 202 12
+1 7 Soft deadline penalty 10 191 32
+1 7 Proportional Soft (0-1) 10 191 41
+1 7 Non executed number 10 191 40
+1 7 Heuristique 10 191 67
+1 8 Soft deadline penalty 10 200 27
+1 8 Proportional Soft (0-1) 10 200 38
+1 8 Non executed number 10 200 41
+1 8 Heuristique 10 200 12
+1 9 Soft deadline penalty 10 184 23
+1 9 Proportional Soft (0-1) 10 184 33
+1 9 Non executed number 10 184 35
+1 9 Heuristique 10 184 29
+2 0 Soft deadline penalty 15 248 11
+2 0 Proportional Soft (0-1) 15 248 24
+2 0 Non executed number 15 248 22
+2 0 Heuristique 15 248 4
+2 1 Soft deadline penalty 15 294 23
+2 1 Proportional Soft (0-1) 15 294 40
+2 1 Non executed number 15 294 40
+2 1 Heuristique 15 294 55
+2 2 Soft deadline penalty 15 283 30
+2 2 Proportional Soft (0-1) 15 283 43
+2 2 Non executed number 15 283 44
+2 2 Heuristique 15 283 17
+2 3 Soft deadline penalty 15 294 16
+2 3 Proportional Soft (0-1) 15 294 31
+2 3 Non executed number 15 294 30
+2 3 Heuristique 15 294 10
+2 4 Soft deadline penalty 15 285 15
+2 4 Proportional Soft (0-1) 15 285 32
+2 4 Non executed number 15 285 32
+2 4 Heuristique 15 285 82
+2 5 Soft deadline penalty 15 331 25
+2 5 Proportional Soft (0-1) 15 331 44
+2 5 Non executed number 15 331 41
+2 5 Heuristique 15 331 130
+2 6 Soft deadline penalty 15 330 24
+2 6 Proportional Soft (0-1) 15 330 43
+2 6 Non executed number 15 330 46
+2 6 Heuristique 15 330 68
+2 7 Soft deadline penalty 15 325 31
+2 7 Proportional Soft (0-1) 15 325 42
+2 7 Non executed number 15 325 39
+2 7 Heuristique 15 325 77
+2 8 Soft deadline penalty 15 316 20
+2 8 Proportional Soft (0-1) 15 316 30
+2 8 Non executed number 15 316 35
+2 8 Heuristique 15 316 19
+2 9 Soft deadline penalty 15 304 26
+2 9 Proportional Soft (0-1) 15 304 39
+2 9 Non executed number 15 304 36
+2 9 Heuristique 15 304 13
+3 0 Soft deadline penalty 20 434 27
+3 0 Proportional Soft (0-1) 20 434 47
+3 0 Non executed number 20 434 48
+3 0 Heuristique 20 434 39
+3 1 Soft deadline penalty 20 403 22
+3 1 Proportional Soft (0-1) 20 403 39
+3 1 Non executed number 20 403 43
+3 1 Heuristique 20 403 14
+3 2 Soft deadline penalty 20 422 25
+3 2 Proportional Soft (0-1) 20 422 35
+3 2 Non executed number 20 422 37
+3 2 Heuristique 20 422 91
+3 3 Soft deadline penalty 20 422 16
+3 3 Proportional Soft (0-1) 20 422 32
+3 3 Non executed number 20 422 38
+3 3 Heuristique 20 422 101
+3 4 Soft deadline penalty 20 331 15
+3 4 Proportional Soft (0-1) 20 331 33
+3 4 Non executed number 20 331 33
+3 4 Heuristique 20 331 11
+3 5 Soft deadline penalty 20 321 22
+3 5 Proportional Soft (0-1) 20 321 34
+3 5 Non executed number 20 321 38
+3 5 Heuristique 20 321 12
+3 6 Soft deadline penalty 20 370 19
+3 6 Proportional Soft (0-1) 20 370 32
+3 6 Non executed number 20 370 29
+3 6 Heuristique 20 370 64
+3 7 Soft deadline penalty 20 394 9
+3 7 Proportional Soft (0-1) 20 394 32
+3 7 Non executed number 20 394 33
+3 7 Heuristique 20 394 8
+3 8 Soft deadline penalty 20 387 37
+3 8 Proportional Soft (0-1) 20 387 46
+3 8 Non executed number 20 387 43
+3 8 Heuristique 20 387 17
+3 9 Soft deadline penalty 20 382 10
+3 9 Proportional Soft (0-1) 20 382 24
+3 9 Non executed number 20 382 27
+3 9 Heuristique 20 382 3
+4 0 Soft deadline penalty 25 504 10
+4 0 Proportional Soft (0-1) 25 504 31
+4 0 Non executed number 25 504 31
+4 0 Heuristique 25 504 6
+4 1 Soft deadline penalty 25 546 32
+4 1 Proportional Soft (0-1) 25 546 44
+4 1 Non executed number 25 546 44
+4 1 Heuristique 25 546 192
+4 2 Soft deadline penalty 25 401 14
+4 2 Proportional Soft (0-1) 25 401 38
+4 2 Non executed number 25 401 37
+4 2 Heuristique 25 401 13
+4 3 Soft deadline penalty 25 456 23
+4 3 Proportional Soft (0-1) 25 456 32
+4 3 Non executed number 25 456 34
+4 3 Heuristique 25 456 10
+4 4 Soft deadline penalty 25 478 29
+4 4 Proportional Soft (0-1) 25 478 39
+4 4 Non executed number 25 478 39
+4 4 Heuristique 25 478 124
+4 5 Soft deadline penalty 25 489 41
+4 5 Proportional Soft (0-1) 25 489 49
+4 5 Non executed number 25 489 46
+4 5 Heuristique 25 489 43
+4 6 Soft deadline penalty 25 484 26
+4 6 Proportional Soft (0-1) 25 484 40
+4 6 Non executed number 25 484 40
+4 6 Heuristique 25 484 81
+4 7 Soft deadline penalty 25 451 28
+4 7 Proportional Soft (0-1) 25 451 45
+4 7 Non executed number 25 451 44
+4 7 Heuristique 25 451 88
+4 8 Soft deadline penalty 25 558 17
+4 8 Proportional Soft (0-1) 25 558 33
+4 8 Non executed number 25 558 38
+4 8 Heuristique 25 558 21
+4 9 Soft deadline penalty 25 455 24
+4 9 Proportional Soft (0-1) 25 455 41
+4 9 Non executed number 25 455 43
+4 9 Heuristique 25 455 91

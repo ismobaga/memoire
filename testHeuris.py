@@ -69,7 +69,7 @@ tasks, users, inputs, outputs, requests = generata_sytem(N_TASKS, N_USERS, N_INP
 
 
 
-_, count = heuristic(tasks, users, requests, inputs, outputs, SERVER_COMPUTATION_CAPACITY)
+individu, count = heuristic(tasks, users, requests, inputs, outputs, SERVER_COMPUTATION_CAPACITY)
 
 print(count)
 
