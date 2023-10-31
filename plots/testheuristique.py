@@ -3,13 +3,17 @@ from collections import defaultdict
 
 from matplotlib import pyplot as plt
 
+from algos import heuristic
 from utils import tikzplotlib_fix_ncols
 
 # plt.style.use("ggplot")
 
 from data import User, Task, Request, generata_sytem
 from genetic import genetic_algorithm, count_individual, count_schedule, fitness_soft, evaluate_individual, \
-    SKIP_ACTION_VALUE, selection_elites, uniform_crossver, roulette_wheel_selection
+    SKIP_ACTION_VALUE, roulette_wheel_selection, selection_elites, uniform_crossver
+
+# Parametre
+
 
 
 colors = itertools.cycle(['r','g','b','c','y','m','k'])
@@ -39,7 +43,7 @@ POPULATION_SIZE = 100
 GENERATIONS = 200
 MUTATION_RATE = 0.2
 PROBABILITY_SKIP = 0.05
-ITERATION =100
+ITERATION = 1
 results = {}
 
 
@@ -50,6 +54,10 @@ def reverse_count(func):
 
     return wrapper
 
+
+# non_exec_count = reverse_count(count_individual)
+
+# functions = [evaluate_individual, fitness_soft, non_exec_count]
 
 non_exec_count = reverse_count(count_individual)
 select_funtions = [roulette_wheel_selection, roulette_wheel_selection, selection_elites]
@@ -65,7 +73,8 @@ names = [(evaluate_individual.__name__, "SD"),
          # (two_point_crossover.__name__, "CR2"),
          (uniform_crossver.__name__, "CRU"),
          (selection_elites.__name__, "SE"),
-         (roulette_wheel_selection.__name__, "SR")
+         (roulette_wheel_selection.__name__, "SR"),
+         (heuristic.__name__ , "Heuristique")
          ]
 for k, v in names:
     fnames[k] = v
@@ -80,69 +89,69 @@ for ff in functions:
 
 
 num_req = 0
-POPULATIONS = list(range(20, 140, 20))
-for fit_func,select_func  in zip(functions, select_funtions):
+USERS = list(range(10, 120, 10))
+for fit_func, select_func in zip(functions, select_funtions):
     name = fit_func.__name__ + select_func.__name__ + crossover_func.__name__
 
-    results[name] = [0 for v in range(len(POPULATIONS))]
+    results[name] = [0 for v in range(len(USERS))]
+results[heuristic.__name__] = [0 for v in range(len(USERS))]
 
 for i in range(ITERATION):
-    tasks, users, inputs, outputs, requests = generata_sytem(N_TASKS, N_USERS, N_INPUT, N_REQUESTS,
-                                                                     MIN_TASK_PROCESSING_REQ,
-                                                                     MAX_TASK_PROCESSING_REQ, USER_COMPUTATION_CAPACITY,
-                                                                     MIN_INPUT_SIZE,
-                                                                     MAX_INPUT_SIZE, MIN_OUTPUT_TIMES, MAX_OUTPUT_TIMES,
-                                                                     MIN_ARRIVAL,
-                                                                     MAX_ARRIVAL, MIN_DEADLINE, MAX_DEADLINE, MEC_RADIUS, PROBABILITY_USER)
-    num_req = len(requests)
-# result = genetic_algorithm(tasks, users, requests, inputs, outputs, SERVER_COMPUTATION_CAPACITY, POPULATION_SIZE,
-#                                GENERATIONS,
-#                                MUTATION_RATE, PROBABILITY_SKIP, draw=False, fitness_func=evaluate_individual)
-# plt.plot(range(1, result['generations'] + 1), result['best_count_per_generation'],
-#          label=f"function {fnames[evaluate_individual.__name__]}")
-# plt.show()
     print("iteration", i)
-    for p, POPULATION_SIZE in enumerate(POPULATIONS):
+    for u, N_USERS in enumerate(USERS):
+        N_REQUESTS = N_USERS/2
+        tasks, users, inputs, outputs, requests = generata_sytem(N_TASKS, N_USERS, N_INPUT, N_REQUESTS,
+                                                             MIN_TASK_PROCESSING_REQ,
+                                                             MAX_TASK_PROCESSING_REQ, USER_COMPUTATION_CAPACITY,
+                                                             MIN_INPUT_SIZE,
+                                                             MAX_INPUT_SIZE, MIN_OUTPUT_TIMES, MAX_OUTPUT_TIMES,
+                                                             MIN_ARRIVAL,
+                                                             MAX_ARRIVAL, MIN_DEADLINE, MAX_DEADLINE, MEC_RADIUS, PROBABILITY_USER )
 
 
 
+        # for fit_func, select_func in zip(functions, select_funtions):
+        #     num_req += len(requests)
+        #     result = genetic_algorithm(tasks, users, requests, inputs, outputs, SERVER_COMPUTATION_CAPACITY, POPULATION_SIZE,
+        #                                GENERATIONS,
+        #                                MUTATION_RATE, PROBABILITY_SKIP, draw=False, fitness_func=fit_func, selection_func=select_func)
+        #     name = fit_func.__name__ + select_func.__name__ + crossover_func.__name__
+        #
+        #     results[name][u] +=  100 * result['best_count']/ len(requests)
 
-        for fit_func,select_func  in zip(functions, select_funtions):
-            # num_req += len(requests)
-            result = genetic_algorithm(tasks, users, requests, inputs, outputs, SERVER_COMPUTATION_CAPACITY, POPULATION_SIZE,
-                                       GENERATIONS,
-                                       MUTATION_RATE, PROBABILITY_SKIP, draw=False, fitness_func=fit_func, selection_func=select_func, crossover_func=crossover_func)
-            name = fit_func.__name__ + select_func.__name__ + crossover_func.__name__
-
-            results[name][p] +=  100 * result['best_count']/len(requests)
-
-
-
-# num_req /= ITERATION*len(POPULATIONS)
+        ind, count = heuristic(tasks, users, requests, inputs, outputs, SERVER_COMPUTATION_CAPACITY)
+        results[heuristic.__name__][u] += 100 * count/ len(requests)
+num_req /= ITERATION*len(USERS)
 # CALCULE DE LA MOYENNE
-for fit_func,select_func  in zip(functions, select_funtions):
+for fit_func , select_func in zip(functions, select_funtions):
     name = fit_func.__name__ + select_func.__name__ + crossover_func.__name__
+
     results[name] = [v / ITERATION for v in results[name]]
 
+results[heuristic.__name__] = [v / ITERATION for v in results[heuristic.__name__]]
 
-uid = f"g{GENERATIONS}-p{POPULATIONS[0]}_{POPULATIONS[-1]}-i{ITERATION}"
+
+uid = f"g{GENERATIONS}-p{POPULATION_SIZE}-u{USERS[0]}_{USERS[-1]}-i{ITERATION}p"
 
 
 fig = plt.figure(figsize=(10, 6))
-plt.xlabel("Population")
+plt.xlabel("n. clients")
 plt.ylabel("\% requ\^{e}tes ex\'{e}cut\'{e}es")
-# plt.title(f"Pourcentage de tache execute par POP_SIZe avec une moyen de {num_req}")
+
+plt.title(f"Pourcentage de requetes execute par clients")
 for name, result in results.items():
-    plt.plot(POPULATIONS, result,
+    plt.plot(USERS, result,
              label=f"{fnames[name]}", marker=next(markers))
     fig.canvas.draw()
     plt.pause(0.1)  # pause 0.1 sec, to force a plot redraw
 
 plt.legend()
-plt.savefig(f"population-{uid}.png", format='png')
+
+
+plt.savefig(f"test-request-{uid}.png", format='png')
 tikzplotlib_fix_ncols(fig)
 import tikzplotlib
-tikzplotlib.save(f"population-{uid}.pgf")
-plt.show()
+tikzplotlib.save(f"test-request-{uid}.pgf")
 
+plt.show()
 

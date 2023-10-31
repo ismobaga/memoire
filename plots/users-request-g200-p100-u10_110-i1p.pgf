@@ -1,0 +1,95 @@
+% This file was created with tikzplotlib v0.10.1.
+\begin{tikzpicture}
+
+\definecolor{crimson2143940}{RGB}{214,39,40}
+\definecolor{darkgray176}{RGB}{176,176,176}
+\definecolor{darkorange25512714}{RGB}{255,127,14}
+\definecolor{forestgreen4416044}{RGB}{44,160,44}
+\definecolor{lightgray204}{RGB}{204,204,204}
+\definecolor{steelblue31119180}{RGB}{31,119,180}
+
+\begin{axis}[
+legend cell align={left},
+legend style={
+  fill opacity=0.8,
+  draw opacity=1,
+  text opacity=1,
+  at={(0.5,0.91)},
+  anchor=north,
+  draw=lightgray204
+},
+tick align=outside,
+tick pos=left,
+title={Pourcentage de requetes execute par clients},
+x grid style={darkgray176},
+xlabel={n. clients},
+xmin=5, xmax=115,
+xtick style={color=black},
+y grid style={darkgray176},
+ylabel={\% requ\^{e}tes ex'{e}cut'{e}es},
+ymin=-2.4, ymax=50.4,
+ytick style={color=black}
+]
+\addplot [semithick, steelblue31119180, mark=*, mark size=3, mark options={solid}]
+table {%
+10 0
+20 0
+30 0
+40 0
+50 0
+60 0
+70 0
+80 0
+90 0
+100 0
+110 0
+};
+\addlegendentry{AGOR + SD + SR + CRU}
+\addplot [semithick, darkorange25512714, mark=square*, mark size=3, mark options={solid}]
+table {%
+10 0
+20 0
+30 0
+40 0
+50 0
+60 0
+70 0
+80 0
+90 0
+100 0
+110 0
+};
+\addlegendentry{AGOR + PD + SR + CRU}
+\addplot [semithick, forestgreen4416044, mark=triangle*, mark size=3, mark options={solid,rotate=180}]
+table {%
+10 0
+20 0
+30 0
+40 0
+50 0
+60 0
+70 0
+80 0
+90 0
+100 0
+110 0
+};
+\addlegendentry{AGOR + HD + SE + CRU}
+\addplot [semithick, crimson2143940, mark=x, mark size=3, mark options={solid}]
+table {%
+10 48
+20 17.0731707317073
+30 39.6825396825397
+40 31.25
+50 21.5686274509804
+60 36.697247706422
+70 25
+80 32.3076923076923
+90 24.8407643312102
+100 30.952380952381
+110 40.2714932126697
+};
+\addlegendentry{Heuristique}
+\end{axis}
+
+\end{tikzpicture}

@@ -153,6 +153,28 @@ def crossover(parent1, parent2):
     return child1, child2
 
 
+def two_point_crossover(parent1, parent2):
+    # child = [[None] * len(parent1[0])] * 2
+    pivot1 = np.random.randint(1, len(parent1) - 2)
+    pivot2 = np.random.randint(pivot1 + 1, len(parent1))
+    pivot1, pivot2 = min(pivot1, pivot2), max(pivot1, pivot2)
+    child1 = parent1[:pivot1] + parent2[pivot1:pivot2] + parent1[pivot2:]
+    child2 = parent2[:pivot1] + parent1[pivot1:pivot2] + parent2[pivot2:]
+    return child1, child2
+
+
+def uniform_crossver(parent1, parent2):
+    child1, child2 = [], []
+    for gene1, gene2 in zip(parent1, parent2):
+        if random.random() < 0.5:
+            child1.append(gene1)
+            child2.append(gene2)
+        else:
+            child1.append(gene2)
+            child2.append(gene1)
+    return child1, child2
+
+
 # Opérateur de mutation
 def mutate(individual, mutation_rate, requests):
     mutated_individual = individual.copy()
@@ -176,7 +198,7 @@ def correct_population(population, requests):
     return corrected_population
 
 
-def selection(population, fitness_scores, population_size, elite_size):
+def selection(population, fitness_scores, elite_size):
     arr = np.array(fitness_scores)
     indices = arr.argsort()[-elite_size:][::-1]
     selected = []
@@ -194,14 +216,80 @@ def selection_elites(population, fitness_values, elite_size):
         elites.append(population[indice])
     return elites
 
+def roulette_selection(population, fitness_values, elite_size):
+    fs = fitness_values
+    sum_fs = sum(fs)
+    max_fs = max(fs)
+    min_fs = min(fs)
+    p = random.random()*sum_fs
+    t = max_fs + min_fs
+    choosen = population[0]
+    selected = []
+    while len(selected) < elite_size:
+        for i, choosen in enumerate(population):
+            p -= (t - fitness_values[i])
+            if p < 0:
+                selected.append(choosen)
+                break
+    return selected
+def roulette_wheel_selection_bac(population, fitness_values, elite_size):
+    selected = []
+    for _ in range(elite_size):
+        mf = min(fitness_values) + 1
+        maxf = max(fitness_values) + 1
+        fitness_values = maxf -  np.array(fitness_values)
+        fitness_values = list(fitness_values)
 
-def roulette_wheel_selection(population, fitness_scores, population_size, elite_size):
+
+
+
+        # Inversion des valeurs de fitness (pour minimisation)
+        # inverted_fitness = [1 / f for f in fitness_values]
+
+        # Calcul de la somme totale des valeurs de fitness inversées
+        total_fitness = sum(fitness_values)
+
+        # Calcul des probabilités de sélection pour chaque individu
+        selection_probabilities = [f / total_fitness for f in fitness_values]
+        print("fitness",fitness_values)
+        print("probabilite selection max",selection_probabilities)
+        print("max proba", max(selection_probabilities))
+        print("min proba", min(selection_probabilities))
+
+        # Génération d'un nombre aléatoire entre 0 et 1
+        random_number = random.uniform(0, 1)
+
+        # Sélection de l'individu en utilisant la sélection par roulette
+        cumulative_probability = 0
+        selected_individual = None
+
+        for i, probability in enumerate(selection_probabilities):
+            cumulative_probability += probability
+            if random_number <= cumulative_probability:
+                selected_individual = i
+                break
+        selected.append(population[selected_individual])
+    return selected
+
+def roulette_wheel_selection(population, fitness_scores, elite_size):
+    sum_fs = sum(fitness_scores)
+    max_fs = max(fitness_scores)
+    min_fs = min(fitness_scores)
     # Calculer la somme totale des fitness
+
+    fitness_scores = 4**(max_fs - np.array(fitness_scores, dtype=np.float64))
     total_fitness = sum(fitness_scores)
-    inverse_fitness_scores = 1 / np.array(fitness_scores)
+    import sys
+    # print("sys.maxsize", sys.maxsize)
+    # print("total", total_fitness)
+    # total_fitness = sum(inverse_fitness_scores)
 
     # Calculer les probabilités de sélection pour chaque individu
-    probabilities = [fitness / total_fitness for fitness in inverse_fitness_scores]
+    probabilities = [ fitness / total_fitness for fitness in fitness_scores]
+    # print(len(population[0]))
+    # print("fitness",fitness_scores)
+    # print("proba",probabilities)
+    # print("sum",sum(probabilities))
 
     # Sélectionner les individus d'élite (meilleurs individus)
     selected = []
@@ -234,7 +322,7 @@ def select_parents(population, size):
     return random.sample(population, size)
 
 
-def crossover_population(population, size, parents=None):
+def crossover_population(population, size, parents=None, crossover_func=crossover):
     if parents is None:
         parents = select_parents(population, size)
 
@@ -243,7 +331,7 @@ def crossover_population(population, size, parents=None):
     for i in range(0, len(parents), 2):
         parent1 = parents[i]
         parent2 = parents[i + 1]
-        child1, child2 = crossover(parent1, parent2)
+        child1, child2 = crossover_func(parent1, parent2)
         children.append(child1)
         children.append(child2)
     return children
@@ -257,23 +345,29 @@ def mutate_population(population, mutation_rate, requests):
 
 
 def get_next_generation(population, tasks, users, requests, inputs, outputs, server_processing_capacity, elite_size,
-                        fitness_func, croisement_rate, mutation_rate):
+                        fitness_func, selection_func, crossover_func, croisement_rate, mutation_rate, apply_correction):
     fitness_scores = [fitness_func(individual, requests, tasks, users, inputs, outputs, server_processing_capacity) for
                       individual in population]
 
-    elites = selection_elites(population, fitness_scores, elite_size)
+    elites = selection_func(population, fitness_scores, elite_size)
     # parents_size = len(population) * croisement_rate
     parents_size = len(population) - elite_size
     # parents = selection_elites(population, fitness_scores, parents_size)
-    parents = None  # select_parents(population, parents_size)
+    parents = selection_func(population, fitness_scores, parents_size)
 
-    offspring = crossover_population(population, parents_size, parents)
+    offspring = crossover_population(population, parents_size, parents, crossover_func)
 
     children = mutate_population(offspring, mutation_rate, requests)
     new_population = elites + children
     # corrected_population = correct_population(new_population, requests)
-
-    corrected_population = correct_population(new_population, requests)
+    corrected_population = new_population
+    apply = False
+    if apply_correction == 1:
+        apply = True
+    if 0 < apply_correction < 1 and random.random() > apply_correction:
+        apply = True
+    if apply:
+        corrected_population = correct_population(new_population, requests)
 
     return corrected_population
 
@@ -295,8 +389,11 @@ def create_initial_population(requests, population_size, probability_skip):
     return population
 
 
+# apply_correction = 1 : veut dire que la correction est appliqué a tous les individu
+# apply_correction < 1 : veu dire que avec une probabilité de apply_correction corriger
 def genetic_algorithm(tasks, users, requests, inputs, outputs, server_processing_capacity, population_size, generations,
-                      mutation_rate, probability_skip, draw=False, fitness_func=None):
+                      mutation_rate, probability_skip, draw=False, fitness_func=None, selection_func=None,
+                      crossover_func=None, apply_correction=1):
     def reverse_count(func):
         def wrapper(*args, **kwargs):
             result = func(*args, **kwargs)
@@ -308,9 +405,14 @@ def genetic_algorithm(tasks, users, requests, inputs, outputs, server_processing
         fitness_func = evaluate_individual
         wrapped_for_count_inv = reverse_count(count_individual)
         fitness_func = wrapped_for_count_inv
+    if selection_func == None:
+        selection_func = selection_elites
+    if crossover_func == None:
+        crossover_func = uniform_crossver
 
-    elite_size = 20
+
     croisement_rate = 0.2
+    elite_size = int(croisement_rate * (population_size))  # int(population_size * 0.2)
     fitnesses = []
     population = create_initial_population(requests, population_size, probability_skip)
     population = correct_population(population, requests)
@@ -332,7 +434,7 @@ def genetic_algorithm(tasks, users, requests, inputs, outputs, server_processing
         best_individual = population[best_id]
         # print("Gneneration", generation, "min fit", min_fit, fitness_scores[best_id], best_individual)
         count = count_individual(best_individual, requests, tasks, users, inputs, outputs, server_processing_capacity)
-        best_count_per_generation.append(100*count/len(requests))
+        best_count_per_generation.append(100 * count / len(requests))
         # best_percent_per_generation.append(100 *
         #                                    count_individual(best_individual, requests, tasks, users, inputs, outputs,
         #                                                     server_processing_capacity) / len(requests))
@@ -347,9 +449,13 @@ def genetic_algorithm(tasks, users, requests, inputs, outputs, server_processing
             fitnesses += [[generation, ef]]
             population = sorted(population, key=lambda x: fitness_func(x, requests, tasks, users, inputs, outputs,
                                                                        server_processing_capacity))
+
+        if (generation + 1) == generations:
+            apply_correction = 1
         population = get_next_generation(population, tasks, users, requests, inputs, outputs,
-                                         server_processing_capacity, elite_size, fitness_func, croisement_rate,
-                                         mutation_rate)
+                                         server_processing_capacity, elite_size, fitness_func, selection_func,
+                                         crossover_func, croisement_rate,
+                                         mutation_rate, apply_correction=apply_correction)
     if draw:
         fitness = np.array(fitnesses)
         print(fitness)

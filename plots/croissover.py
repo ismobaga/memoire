@@ -1,19 +1,24 @@
+import itertools
 from collections import defaultdict
 
 from matplotlib import pyplot as plt
 
 from utils import tikzplotlib_fix_ncols
 
+
+colors = itertools.cycle(['r','g','b','c','y','m','k'])
+markers = itertools.cycle(['o','s','v', 'x', '*'])
 plt.style.use("ggplot")
 
 from data import User, Task, Request, generata_sytem
 from genetic import genetic_algorithm, count_individual, count_schedule, fitness_soft, evaluate_individual, \
     SKIP_ACTION_VALUE, two_point_crossover, uniform_crossver, crossover as crossover_one, selection_elites, \
-    roulette_wheel_selection, roulette_selection
+    roulette_wheel_selection
 
 # Parametre
 
-N_USERS = 20
+N_USERS = 30
+PROBABILITY_USER = 0.05
 N_TASKS = 5
 N_INPUT = 5
 N_REQUESTS = 3
@@ -32,7 +37,7 @@ SERVER_COMPUTATION_CAPACITY = 5 * (10 ** 9)
 MEC_RADIUS = 500
 
 # Utilisation de l'algorithme génétique
-POPULATION_SIZE = 100
+POPULATION_SIZE = 200
 GENERATIONS = 200
 MUTATION_RATE = 0.2
 PROBABILITY_SKIP = 0.05
@@ -52,10 +57,10 @@ non_exec_count = reverse_count(count_individual)
 
 functions = [evaluate_individual, fitness_soft, non_exec_count]
 cross_functions = [crossover_one, two_point_crossover, uniform_crossver]
-roulette_selection = roulette_selection
-select_funtions = [selection_elites, roulette_wheel_selection]
-# functions = [non_exec_count]
 cross_functions = [uniform_crossver]
+select_funtions = [selection_elites, roulette_wheel_selection]
+
+# select_funtions = [selection_elites]
 fnames = defaultdict(str)
 names = [(evaluate_individual.__name__, "SD"),
          (fitness_soft.__name__, "PD"),
@@ -64,8 +69,7 @@ names = [(evaluate_individual.__name__, "SD"),
          (two_point_crossover.__name__, "CR2"),
          (uniform_crossver.__name__, "CRU"),
          (selection_elites.__name__, "SE"),
-         (roulette_wheel_selection.__name__, "SR"),
-         (roulette_selection.__name__, "SR")
+         (roulette_wheel_selection.__name__, "SR")
          ]
 for k, v in names:
     fnames[k] = v
@@ -87,7 +91,7 @@ for i in range(ITERATION):
                                                              MIN_INPUT_SIZE,
                                                              MAX_INPUT_SIZE, MIN_OUTPUT_TIMES, MAX_OUTPUT_TIMES,
                                                              MIN_ARRIVAL,
-                                                             MAX_ARRIVAL, MIN_DEADLINE, MAX_DEADLINE, MEC_RADIUS)
+                                                             MAX_ARRIVAL, MIN_DEADLINE, MAX_DEADLINE, MEC_RADIUS, PROBABILITY_USER)
     num_req += len(requests)
     for select_func in select_funtions:
         for crossover_func in cross_functions:
@@ -118,22 +122,23 @@ for key in results:
     results[key]['best_count_per_generation'] = [v / ITERATION for v in
                                                                results[key]['best_count_per_generation']]
 
-uid = f"g{GENERATIONS}-p{POPULATION_SIZE}-f{len(functions)}"
+uid = f"g{GENERATIONS}-p{POPULATION_SIZE}-f{len(functions)}-c{len(cross_functions)}-s{len(select_funtions)}"
 
 fig = plt.figure(figsize=(10, 6))
 plt.xlabel("Generation")
-plt.ylabel("% requetes")
-plt.title(f"Pourcentage de requetes execute par Generation ")
+plt.ylabel("\% requ\^{e}tes ex\'{e}cut\'{e}es")
+plt.title(f"Pourcentage de requêtes exécutées en fonction du nombre de générations avec variation des fonctions de "
+          f"croisement")
 for name, result in results.items():
     plt.plot(range(1, result['generations'] + 1), result['best_count_per_generation'],
-             label=f"function {fnames[name]}")
+             label=f"{fnames[name]}", marker=next(markers))
     fig.canvas.draw()
     plt.pause(0.1)  # pause 0.1 sec, to force a plot redraw
 
 plt.legend()
-plt.savefig(f"fit-cross-select-{uid}.png", format='png')
+plt.savefig(f"generation-{uid}.png", format='png')
 tikzplotlib_fix_ncols(fig)
 import tikzplotlib
 
-tikzplotlib.save(f"fit-cross-select-{uid}.pgf")
+tikzplotlib.save(f"generation-{uid}.pgf")
 plt.show()

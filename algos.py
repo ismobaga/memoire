@@ -2,7 +2,7 @@ from collections import defaultdict
 import numpy as np
 from genetic import  LOCAL_LOCATION, SERVER_LOCATION, evaluate_individual, \
     count_individual
-from utils import reverse_send_group, has_conflict
+from utils import reverse_send_group, has_conflict, group_has_conflict
 
 
 # Probleme to fix : le nombre de taches execute diminus  apres des iterations
@@ -36,6 +36,7 @@ def heuristic(tasks, users, requests, inputs, outputs, server_processing_capacit
     position = 0
     while len(urequests):
         base_req = urequests.pop(0)
+        toremove = {LOCAL_LOCATION:[], SERVER_LOCATION:[]} # la groupe g'envoie a suprime
 
         # chox plus de temps avant deadline
         # reageder les deux possibilie
@@ -61,6 +62,7 @@ def heuristic(tasks, users, requests, inputs, outputs, server_processing_capacit
                     continue
                 elif sendtime not in groups :
                     groups[sendtime] = group
+
                 elif sendtime ==-1:
                     # On ajoute a la liste des non execute
                     groups[sendtime].extend(group)
@@ -73,16 +75,25 @@ def heuristic(tasks, users, requests, inputs, outputs, server_processing_capacit
                 else:
                     time_for_group = sendtime
                     break
+            if time_for_group!=-1:
+                for sub_position, req in enumerate(urequests):
+                    individual = reverse_send_group(groups, len(requests), True)
+                    prev_score = count_individual(individual, requests, tasks, users, inputs, outputs,
+                                             server_processing_capacity)
+                    groups[time_for_group].append((location, req.input_index, req.task, position + sub_position))
+                    if len(requests) <= (position + sub_position):
+                        print(position, sub_position)
+                    individual = reverse_send_group(groups, len(requests))
+                    if has_conflict(individual, requests):
+                        groups[time_for_group].pop()
+                    else:
+                        individual = reverse_send_group(groups, len(requests), True)
+                        score = count_individual(individual, requests, tasks, users, inputs, outputs,
+                                                 server_processing_capacity)
+                        if prev_score > score:
+                            groups[time_for_group].pop()
 
-            for sub_position, req in enumerate(urequests):
-                groups[time_for_group].append((location, req.input_index, req.task, position + sub_position))
-                if len(requests) <= (position + sub_position):
-                    print(position, sub_position)
-                individual = reverse_send_group(groups, len(requests))
-                if has_conflict(individual, requests):
-                    groups[time_for_group].pop()
-
-
+            toremove[location] = groups[time_for_group]
             loc_groups[location] = groups
             individual = reverse_send_group(groups, len(requests), True)
             score = count_individual(individual, requests, tasks, users, inputs, outputs, server_processing_capacity)
@@ -91,9 +102,17 @@ def heuristic(tasks, users, requests, inputs, outputs, server_processing_capacit
         # Compare les deux version et choisi le meilleur
         # print(loc_scores)
         location = max(loc_scores, key=loc_scores.get)
+        # print("location", location)
         # print("max loc", location, loc_scores[location])
         final_groups = loc_groups[location]
-        # print("score", score, "position", position, "restant", len(urequests))
+
+        # print("to remove", toremove[location])
+        for l, i_id, t_id, pos in toremove[location]:
+            req = requests[pos]
+            # urequests.remove((pos-position, r_id))
+            urequests = list(filter(lambda x: not(x.id == req.id and req.task == x.task), urequests))
+
+        # print("score", loc_scores, "position", position, "restant", len(urequests),"/", len(requests))
         # print("final", final_groups)
         # print("local", loc_groups[LOCAL_LOCATION])
         # print("serve", loc_groups[SERVER_LOCATION])
@@ -103,3 +122,41 @@ def heuristic(tasks, users, requests, inputs, outputs, server_processing_capacit
     # print("fin heuristic")
     return individual, count_individual(individual, requests, tasks, users, inputs, outputs, server_processing_capacity)
 
+
+
+def online(tasks, users, requests, inputs, outputs, server_processing_capacity):
+    current_time = 0
+    request_queue = []
+    final_groups = defaultdict(list)
+    do = True
+
+    while do or request_queue:
+        # un do while
+        do = False
+        # Trie les requêtes en fonction de leur deadline
+        request_queue.sort(key=lambda request: request.arrival_time + request.deadline)
+
+        # Sélectionne la première requête dans la file
+        next_request = request_queue[0]
+        if next_request.arrival_time <= current_time:
+            # on le planifi pour current time
+            # on va determile le quel des deux mode d'envoi peux accommoder le plusde requetes
+            sendtime = current_time
+            groups = {LOCAL_LOCATION: [], SERVER_LOCATION:[]}
+            for location in [LOCAL_LOCATION, SERVER_LOCATION]:
+                group = []
+                group.append((location, next_request.input_index, next_request.task, next_request.id))
+                for request in request_queue:
+                    group.append((location, request.input_index, request.task, request.id))
+                    has = group_has_conflict(group, requests)
+                    if has:
+                        # si on ne peut pas ajoute au groupe d'envoi sans conflit
+                        group.pop()
+
+                groups[location] = group
+            # Comparer les deux groups choisir le meuilleur
+
+        # Enleve les requete scheduler de la fille
+        # Increment le temps pour passe a l'instant suivant
+
+        # Evaler le tout

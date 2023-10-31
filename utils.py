@@ -1,6 +1,9 @@
 import matplotlib.pyplot as plt
 from collections import defaultdict
 import random
+
+
+
 LOCAL_LOCATION = 1
 SERVER_LOCATION = 2
 SKIP_ACTION_VALUE = None  # (-1,-1)
@@ -250,6 +253,17 @@ def simple_individual_corrector(individual, requests):
     return individual
 
 
+def multicast_unicast(individual, requests):
+    groups = form_send_group(individual, requests, with_skip=False)
+    multi = 0
+    uni = 0
+    for send_time, group in groups.items():
+        if len(group ) > 1:
+            multi+=1
+        else :
+            uni+=1
+    return  multi, uni
+
 
 def tikzplotlib_fix_ncols(obj):
     """
@@ -259,3 +273,5 @@ def tikzplotlib_fix_ncols(obj):
         obj._ncol = obj._ncols
     for child in obj.get_children():
         tikzplotlib_fix_ncols(child)
+
+

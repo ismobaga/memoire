@@ -1,0 +1,88 @@
+% This file was created with tikzplotlib v0.10.1.
+\begin{tikzpicture}
+
+\definecolor{crimson2143940}{RGB}{214,39,40}
+\definecolor{darkgray176}{RGB}{176,176,176}
+\definecolor{darkorange25512714}{RGB}{255,127,14}
+\definecolor{forestgreen4416044}{RGB}{44,160,44}
+\definecolor{lightgray204}{RGB}{204,204,204}
+\definecolor{steelblue31119180}{RGB}{31,119,180}
+
+\begin{axis}[
+legend cell align={left},
+legend style={fill opacity=0.8, draw opacity=1, text opacity=1, draw=lightgray204},
+tick align=outside,
+tick pos=left,
+title={Pourcentage de requetes execute par clients},
+x grid style={darkgray176},
+xlabel={n. clients},
+xmin=5, xmax=115,
+xtick style={color=black},
+y grid style={darkgray176},
+ylabel={\% requ\^{e}tes ex'{e}cut'{e}es},
+ymin=10.9584630821656, ymax=83.1323990057801,
+ytick style={color=black}
+]
+\addplot [semithick, steelblue31119180, mark=*, mark size=3, mark options={solid}]
+table {%
+10 73.4407308377897
+20 60.0072431622732
+30 50.1480270146634
+40 35.5199129890125
+50 29.4873624771616
+60 23.4578833610868
+70 19.0257002838767
+80 18.0902132649757
+90 17.0241623049589
+100 14.7206314324372
+110 14.2390965332389
+};
+\addlegendentry{AGOR + SD + SR + CRU}
+\addplot [semithick, darkorange25512714, mark=square*, mark size=3, mark options={solid}]
+table {%
+10 79.8517655547067
+20 74.1611222945041
+30 65.3013055911154
+40 48.3517172264578
+50 41.4352845829253
+60 36.4347474193511
+70 29.8215922508593
+80 25.3936675982186
+90 24.4072418628554
+100 20.4357429900674
+110 20.19736590319
+};
+\addlegendentry{AGOR + PD + SR + CRU}
+\addplot [semithick, forestgreen4416044, mark=triangle*, mark size=3, mark options={solid,rotate=180}]
+table {%
+10 79.8350988880401
+20 75.6971173292201
+30 68.2946297600079
+40 50.5006219221398
+50 44.1034278091705
+60 38.2315139594372
+70 31.1354966908772
+80 27.6982975087412
+90 25.522745744552
+100 22.2045443483054
+110 21.8379722145226
+};
+\addlegendentry{AGOR + HD + SE + CRU}
+\addplot [semithick, crimson2143940, mark=x, mark size=3, mark options={solid}]
+table {%
+10 27.0320770732535
+20 27.367556216533
+30 26.7388576781223
+40 28.9575446807605
+50 30.2330768348245
+60 28.1188296027269
+70 27.9094094212301
+80 29.4198809951866
+90 33.7435046481222
+100 29.0858562254886
+110 25.2072028187493
+};
+\addlegendentry{Heuristique}
+\end{axis}
+
+\end{tikzpicture}

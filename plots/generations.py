@@ -12,30 +12,31 @@ from genetic import genetic_algorithm, count_individual, count_schedule, fitness
 
 # Parametre
 
-N_USERS = 20
+N_USERS = 30
 N_TASKS = 5
 N_INPUT = 5
 N_REQUESTS = 3
+PROBABILITY_USER = 0.05
 MIN_INPUT_SIZE = 1e3
 MAX_INPUT_SIZE = 1e4
 MIN_OUTPUT_TIMES = 1.5
 MAX_OUTPUT_TIMES = 2
-USER_COMPUTATION_CAPACITY = 20
-MIN_TASK_PROCESSING_REQ = 10
-MAX_TASK_PROCESSING_REQ = 20
+USER_COMPUTATION_CAPACITY = 1 * (10 ** 9)
+MIN_TASK_PROCESSING_REQ = 100
+MAX_TASK_PROCESSING_REQ = 200
 MIN_ARRIVAL = 1
 MAX_ARRIVAL = 40
 MIN_DEADLINE = 3
 MAX_DEADLINE = 8
-SERVER_COMPUTATION_CAPACITY = 1000
-MEC_RADIUS = 100
+SERVER_COMPUTATION_CAPACITY = 5 * (10 ** 9)
+MEC_RADIUS = 500
 
 # Utilisation de l'algorithme génétique
 POPULATION_SIZE = 100
 GENERATIONS = 200
 MUTATION_RATE = 0.2
 PROBABILITY_SKIP = 0.05
-ITERATION =10
+ITERATION =1
 results = {}
 
 
@@ -64,8 +65,9 @@ for i in range(ITERATION):
                                                                  MIN_INPUT_SIZE,
                                                                  MAX_INPUT_SIZE, MIN_OUTPUT_TIMES, MAX_OUTPUT_TIMES,
                                                                  MIN_ARRIVAL,
-                                                                 MAX_ARRIVAL, MIN_DEADLINE, MAX_DEADLINE, MEC_RADIUS)
+                                                                 MAX_ARRIVAL, MIN_DEADLINE, MAX_DEADLINE, MEC_RADIUS, PROBABILITY_USER)
     num_req += len(requests)
+    print("nombre de requete", len(requests))
     for fit_func in functions:
         result = genetic_algorithm(tasks, users, requests, inputs, outputs, SERVER_COMPUTATION_CAPACITY, POPULATION_SIZE,
                                GENERATIONS,

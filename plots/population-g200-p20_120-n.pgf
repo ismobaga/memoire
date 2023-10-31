@@ -1,0 +1,63 @@
+% This file was created with tikzplotlib v0.10.1.
+\begin{tikzpicture}
+
+\definecolor{darkgray176}{RGB}{176,176,176}
+\definecolor{darkorange25512714}{RGB}{255,127,14}
+\definecolor{forestgreen4416044}{RGB}{44,160,44}
+\definecolor{lightgray204}{RGB}{204,204,204}
+\definecolor{steelblue31119180}{RGB}{31,119,180}
+
+\begin{axis}[
+legend cell align={left},
+legend style={
+  fill opacity=0.8,
+  draw opacity=1,
+  text opacity=1,
+  at={(0.03,0.97)},
+  anchor=north west,
+  draw=lightgray204
+},
+tick align=outside,
+tick pos=left,
+x grid style={darkgray176},
+xlabel={Population},
+xmin=15, xmax=125,
+xtick style={color=black},
+y grid style={darkgray176},
+ylabel={\% requ\^{e}tes ex'{e}cut'{e}es},
+ymin=38.6253370379392, ymax=62.6391859283255,
+ytick style={color=black}
+]
+\addplot [semithick, steelblue31119180, mark=*, mark size=3, mark options={solid}]
+table {%
+20 39.7168756238659
+40 42.0093700153943
+60 43.3480243867626
+80 42.7998534957959
+100 43.3614327135936
+120 43.1349862935679
+};
+\addlegendentry{AGOR + SD + SR + CRU}
+\addplot [semithick, darkorange25512714, mark=square*, mark size=3, mark options={solid}]
+table {%
+20 53.333426738975
+40 56.3452771819658
+60 57.5142195941606
+80 58.0363035862633
+100 59.0637561615632
+120 59.6942802847312
+};
+\addlegendentry{AGOR + PD + SR + CRU}
+\addplot [semithick, forestgreen4416044, mark=triangle*, mark size=3, mark options={solid,rotate=180}]
+table {%
+20 56.6597506348061
+40 58.4096350454096
+60 59.4875921300172
+80 59.909536763523
+100 61.5472894861051
+120 61.5476473423989
+};
+\addlegendentry{AGOR + HD + SE + CRU}
+\end{axis}
+
+\end{tikzpicture}

@@ -9,7 +9,7 @@ plt.style.use("ggplot")
 from data import User, Task, Request, generata_sytem
 from genetic import genetic_algorithm, count_individual, count_schedule, fitness_soft, evaluate_individual, \
     SKIP_ACTION_VALUE, two_point_crossover, uniform_crossver, crossover as crossover_one, selection_elites, \
-    roulette_wheel_selection, roulette_selection
+    roulette_wheel_selection
 
 # Parametre
 
@@ -32,11 +32,11 @@ SERVER_COMPUTATION_CAPACITY = 5 * (10 ** 9)
 MEC_RADIUS = 500
 
 # Utilisation de l'algorithme génétique
-POPULATION_SIZE = 100
-GENERATIONS = 200
+POPULATION_SIZE = 20
+GENERATIONS = 100
 MUTATION_RATE = 0.2
 PROBABILITY_SKIP = 0.05
-ITERATION = 10
+ITERATION = 1
 results = {}
 
 
@@ -52,9 +52,8 @@ non_exec_count = reverse_count(count_individual)
 
 functions = [evaluate_individual, fitness_soft, non_exec_count]
 cross_functions = [crossover_one, two_point_crossover, uniform_crossver]
-roulette_selection = roulette_selection
 select_funtions = [selection_elites, roulette_wheel_selection]
-# functions = [non_exec_count]
+functions = [non_exec_count]
 cross_functions = [uniform_crossver]
 fnames = defaultdict(str)
 names = [(evaluate_individual.__name__, "SD"),
@@ -64,8 +63,7 @@ names = [(evaluate_individual.__name__, "SD"),
          (two_point_crossover.__name__, "CR2"),
          (uniform_crossver.__name__, "CRU"),
          (selection_elites.__name__, "SE"),
-         (roulette_wheel_selection.__name__, "SR"),
-         (roulette_selection.__name__, "SR")
+         (roulette_wheel_selection.__name__, "SR")
          ]
 for k, v in names:
     fnames[k] = v
@@ -122,8 +120,8 @@ uid = f"g{GENERATIONS}-p{POPULATION_SIZE}-f{len(functions)}"
 
 fig = plt.figure(figsize=(10, 6))
 plt.xlabel("Generation")
-plt.ylabel("% requetes")
-plt.title(f"Pourcentage de requetes execute par Generation ")
+plt.ylabel("% taches")
+plt.title(f"Pourcentage de tache execute par Generation avec une moyen de {num_req}")
 for name, result in results.items():
     plt.plot(range(1, result['generations'] + 1), result['best_count_per_generation'],
              label=f"function {fnames[name]}")

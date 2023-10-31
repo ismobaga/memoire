@@ -3,7 +3,7 @@ import math
 import numpy as np
 
 # Parameters for the channel and signal-to-noise ratio
-BANDWIDTH = 1e6  # 1 MHz bandwidth
+BANDWIDTH = 20e6  # 1 MHz bandwidth
 SNR = 10  # Signal-to-noise ratio in dB
 
 
@@ -43,7 +43,7 @@ class Request(Base):
 def generata_sytem(ntasks, nusers, ninputs, nrequests, min_task_process,
                    max_task_process, user_computation, min_input, max_input,
                    min_output_time, max_output_time, min_arrival, max_arrival, min_deadline, max_deadline,
-                   mec_radius):
+                   mec_radius, prob_client):
     tasks = [Task(i, np.random.randint(min_task_process, max_task_process)) for i in range(ntasks)]
     # Generate user positions within the MEC's radius
     # https://programming.guide/random-point-within-circle.html
@@ -60,15 +60,18 @@ def generata_sytem(ntasks, nusers, ninputs, nrequests, min_task_process,
     for time in range(min_arrival, max_arrival):
         num_requests = np.random.randint(0, nrequests + 1)  # Generate a random number of requests per interval
         userslist = list(range(nusers))
-        for _ in range(num_requests):
-            user_id = np.random.choice(userslist)
-            userslist.remove(user_id)
-            task_id = np.random.randint(0, ntasks)
-            input_id = np.random.randint(0, ninputs)
-            arrival = time
-            deadline = np.random.randint(min_deadline, max_deadline)
-            requests.append(Request(ri, user_id, task_id, input_id, arrival, deadline))
-            ri += 1
+        for user_id in userslist:
+            random_number = np.random.random()
+            if random_number <= prob_client:
+            #for _ in range(num_requests):
+                user_id = np.random.choice(userslist)
+                userslist.remove(user_id)
+                task_id = np.random.randint(0, ntasks)
+                input_id = np.random.randint(0, ninputs)
+                arrival = time
+                deadline = np.random.randint(min_deadline, max_deadline)
+                requests.append(Request(ri, user_id, task_id, input_id, arrival, deadline))
+                ri += 1
 
     return tasks, users, inputs, outputs, requests
 
