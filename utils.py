@@ -257,12 +257,13 @@ def multicast_unicast(individual, requests):
     groups = form_send_group(individual, requests, with_skip=False)
     multi = 0
     uni = 0
+    print("groups multi uni", [group for send_time, group in groups.items()])
     for send_time, group in groups.items():
-        if len(group ) > 1:
-            multi+=1
+        if len(group) > 1:
+            multi +=1
         else :
             uni+=1
-    return  multi, uni
+    return multi, uni
 
 
 def tikzplotlib_fix_ncols(obj):

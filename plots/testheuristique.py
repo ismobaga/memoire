@@ -4,7 +4,7 @@ from collections import defaultdict
 from matplotlib import pyplot as plt
 
 from algos import heuristic
-from utils import tikzplotlib_fix_ncols
+from utils import tikzplotlib_fix_ncols, multicast_unicast
 
 # plt.style.use("ggplot")
 
@@ -89,7 +89,7 @@ for ff in functions:
 
 
 num_req = 0
-USERS = list(range(10, 120, 10))
+USERS = list(range(10, 30, 10))
 for fit_func, select_func in zip(functions, select_funtions):
     name = fit_func.__name__ + select_func.__name__ + crossover_func.__name__
 
@@ -120,6 +120,8 @@ for i in range(ITERATION):
         #     results[name][u] +=  100 * result['best_count']/ len(requests)
 
         ind, count = heuristic(tasks, users, requests, inputs, outputs, SERVER_COMPUTATION_CAPACITY)
+        multi, uni = multicast_unicast(ind, requests)
+        print(multi, uni)
         results[heuristic.__name__][u] += 100 * count/ len(requests)
 num_req /= ITERATION*len(USERS)
 # CALCULE DE LA MOYENNE

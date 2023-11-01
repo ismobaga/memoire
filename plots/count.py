@@ -4,7 +4,7 @@ from collections import defaultdict
 from matplotlib import pyplot as plt
 
 from algos import heuristic
-from utils import tikzplotlib_fix_ncols, multicast_unicast
+from utils import tikzplotlib_fix_ncols
 
 # plt.style.use("ggplot")
 
@@ -43,7 +43,7 @@ POPULATION_SIZE = 100
 GENERATIONS = 200
 MUTATION_RATE = 0.2
 PROBABILITY_SKIP = 0.05
-ITERATION =1
+ITERATION =10
 results = {}
 
 
@@ -93,10 +93,8 @@ USERS = list(range(10, 120, 10))
 for fit_func, select_func in zip(functions, select_funtions):
     name = fit_func.__name__ + select_func.__name__ + crossover_func.__name__
 
-    results[name] = [[0 for v in range(len(USERS))]]*2
-results[heuristic.__name__] = [[0 for v in range(len(USERS))]]*2
-
-
+    results[name] = [0 for v in range(len(USERS))]
+results[heuristic.__name__] = [0 for v in range(len(USERS))]
 
 for i in range(ITERATION):
     print("iteration", i)
@@ -118,24 +116,19 @@ for i in range(ITERATION):
                                        GENERATIONS,
                                        MUTATION_RATE, PROBABILITY_SKIP, draw=False, fitness_func=fit_func, selection_func=select_func)
             name = fit_func.__name__ + select_func.__name__ + crossover_func.__name__
-            individual = result['best_individual']
-            multi, uni = multicast_unicast(individual, requests)
 
-            results[name][0][u] += multi
-            results[name][1][u] += uni
+            results[name][u] +=   result['best_count']#/ len(requests)
 
         ind, count = heuristic(tasks, users, requests, inputs, outputs, SERVER_COMPUTATION_CAPACITY)
-        multi, uni = multicast_unicast(ind, requests)
-        results[heuristic.__name__][0][u] += multi
-        results[heuristic.__name__][1][u] += uni
+        results[heuristic.__name__][u] +=  count #/ len(requests)
 num_req /= ITERATION*len(USERS)
 # CALCULE DE LA MOYENNE
 for fit_func , select_func in zip(functions, select_funtions):
     name = fit_func.__name__ + select_func.__name__ + crossover_func.__name__
 
-    results[name] = [[v / ITERATION for v in mode ] for mode in results[name]]
+    results[name] = [v / ITERATION for v in results[name]]
 
-results[heuristic.__name__] = [[v / ITERATION for v in mode] for mode in results[heuristic.__name__]]
+results[heuristic.__name__] = [v / ITERATION for v in results[heuristic.__name__]]
 
 
 uid = f"g{GENERATIONS}-p{POPULATION_SIZE}-u{USERS[0]}_{USERS[-1]}-i{ITERATION}p"
@@ -143,23 +136,22 @@ uid = f"g{GENERATIONS}-p{POPULATION_SIZE}-u{USERS[0]}_{USERS[-1]}-i{ITERATION}p"
 
 fig = plt.figure(figsize=(10, 6))
 plt.xlabel("n. clients")
-plt.ylabel("Nombre d'envoi")
+plt.ylabel("n. requ\^{e}tes ex\'{e}cut\'{e}es")
 
-plt.title(f"Pourcentage de requetes execute par clients")
+plt.title(f"N de requetes moyen execute en fonction du n. clients")
 for name, result in results.items():
-    print(fnames[name], result)
-    # plt.plot(USERS, result,
-    #          label=f"{fnames[name]}", marker=next(markers))
-    # fig.canvas.draw()
-    # plt.pause(0.1)  # pause 0.1 sec, to force a plot redraw
+    plt.plot(USERS, result,
+             label=f"{fnames[name]}", marker=next(markers))
+    fig.canvas.draw()
+    plt.pause(0.1)  # pause 0.1 sec, to force a plot redraw
 
 plt.legend()
 
 
-plt.savefig(f"multicast-request-{uid}.png", format='png')
+plt.savefig(f"count-request-{uid}.png", format='png')
 tikzplotlib_fix_ncols(fig)
 import tikzplotlib
-tikzplotlib.save(f"multicast-request-{uid}.pgf")
+tikzplotlib.save(f"count-request-{uid}.pgf")
 
 plt.show()
 

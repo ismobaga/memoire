@@ -30,6 +30,12 @@ def can_be_add(group, value):
     return True
 
 
+def glouton(tasks, users, requests, inputs, outputs, server_processing_capacity):
+    urequests = requests.copy()
+    final_groups = defaultdict(list)
+    position = 0
+    while len(urequests)> 0:
+        base_req = urequests.pop(0)
 def heuristic(tasks, users, requests, inputs, outputs, server_processing_capacity):
     urequests = requests.copy()
     final_groups = defaultdict(list)
@@ -119,6 +125,8 @@ def heuristic(tasks, users, requests, inputs, outputs, server_processing_capacit
         position += 1
 
     individual = reverse_send_group(final_groups, len(requests), True)
+    print("individu", individual)
+    print("group", final_groups)
     # print("fin heuristic")
     return individual, count_individual(individual, requests, tasks, users, inputs, outputs, server_processing_capacity)
 
